@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Models;
+
+// use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class MessageCategoryType extends Model
+{
+    use SoftDeletes;
+    
+    protected $fillable = [
+        'name',
+        'title',
+        'description',
+        'order'
+    ];
+
+    protected $dates = ['deleted_at'];
+    protected $table = 'tbl_msg_category_type';
+    
+    public function messages()
+    {
+        return $this->hasMany(Message::class, 'type_id', 'id');
+    }
+}
