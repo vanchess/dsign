@@ -37,7 +37,7 @@ class File extends Model
     
     public function signCerts()
     {
-        return $this->belongsToMany(CryptoCert::class, 'tbl_file_sign', 'file_id', 'cert_id')->wherePivot('deleted_at', null);
+        return $this->belongsToMany(CryptoCert::class, 'tbl_file_sign', 'file_id', 'cert_id')->wherePivot('deleted_at', null)->wherePivot('verified_on_server_success', true);
     }
     
     public function signUsers()

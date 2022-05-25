@@ -300,7 +300,7 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
             if ($accountant || $mo) {
                 $msg->status_id = $statusSigning->id;
             }
-            // Подписи бухгалтера И руководителя => ready
+            // Подписи бухгалтера И руководителя => SignedMo
             if ($accountant && $mo) {
                 $msg->status_id = $statusSignedMo->id;
             }
@@ -341,16 +341,58 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
             $msg->save();
             
         }
+        
+        if ($msg->type->name === 'agreement-fin-salaries') {
+            
+            $tf = true;
+            $mo = true;
+            $dzo = true;
+            
+            foreach ($files as $f) {
+                $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
+                
+                $tempTf = false;
+                $tempMo = false;
+                $tampDzo = false;
+                foreach ($signUsers as $u) {
+                    if ($u->hasPermissionTo('sign-mo-lider agreement-fin-salaries')) {
+                        $tempMo = true;
+                    }
+                    if ($u->hasPermissionTo('sign-tf-lider agreement-fin-salaries')) {
+                        $tempTf = true;
+                    }
+                    if ($u->hasPermissionTo('sign-dzo-lider agreement-fin-salaries')) {
+                        $tampDzo = true;
+                    }
+                }
+                $mo = $mo && $tempMo;
+                $tf = $tf && $tempTf;
+                $dzo = $dzo && $tampDzo;
+            }
+            if ($tf) {
+                $msg->status_id = $statusSignedByHead->id;
+            }
+            if ($tf && $mo) {
+                $msg->status_id = $statusSignedMo->id;
+            }
+            if ($tf && $mo && $dzo) {
+                $msg->status_id = $statusReady->id;
+            }
+            $msg->save();
+            
+        }
         /**/
         if ($msg->type->name === 'contract-payment-oms') {
             $smoCount = 2;
             
             $tf = true;
             $mo = true;
-            $smo = [];
+            $smo = true;
+            /*
             for ($i = 0; $i++; $i < $smoCount) {
                 $s[i] = true;
             }
+            */
             
             foreach ($files as $f) {
                 $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
@@ -391,9 +433,43 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
                 $msg->status_id = $statusReady->id;
             }
             
+            $msg->save();   
+        }
+        
+        if ($msg->type->name === 'contract-financial-support-oms') {
+            
+            $tf = true;
+            $smo = true;
+            
+            foreach ($files as $f) {
+                $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
+                
+                $tempTf = false;
+                $tempSmo = false;
+                foreach ($signUsers as $u) {
+                    if ($u->hasPermissionTo('sign-smo-lider contract-financial-support-oms')) {
+                        $tempSmo = true;
+                    }
+                    if ($u->hasPermissionTo('sign-tf-lider contract-financial-support-oms')) {
+                        $tempTf = true;
+                    }
+                }
+                $smo = $smo && $tempSmo;
+                $tf = $tf && $tempTf;
+            }
+            if ($tf) {
+                $msg->status_id = $statusSignedByHead->id;
+            }
+            /*
+            if ($smo) {
+                $msg->status_id = $statusSignedMo->id;
+            }
+            */
+            if ($tf && $smo) {
+                $msg->status_id = $statusReady->id;
+            }
             $msg->save();
             
         }
-        
     }
 }

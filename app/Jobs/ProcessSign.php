@@ -192,9 +192,19 @@ class ProcessSign implements ShouldQueue
                     ]);
                 }
             }, 3);
+            
+
             $this->sign->cert_id = $cryptoCert->id;
             $this->sign->verified_on_server_error_srt = null;
             $this->sign->verified_on_server_success = true;
+            
+            // В связи с изменением 63-ФЗ. В октябре 2022 можно удалить эту проверку.
+            $blockCertIssuer = 'CN=ФОМС, O=ФОМС, STREET="Новослободская ул., д.37", L=Москва, S=77 Москва, C=RU, INN=007727032382, OGRN=1027739712857, E=ucfoms@ffoms.ru';
+            $blockCertIssuerMsg = 'Применение сертификатов ЭП, созданных удостоверяющими центрами(УЦ), не прошедшими аккредитацию по новым правилам, после 1.01.2022 г. не допускается. Согласно ч. 5 статьи 3 ФЗ №476-ФЗ Аккредитация УЦ, полученная до дня вступления в силу ФЗ №476-ФЗ, действует не более чем до 1.01.22г.';
+            if($issuer === $blockCertIssuer) {
+                $this->sign->verified_on_server_success = false;
+                $this->sign->verified_on_server_error_srt = $blockCertIssuerMsg;
+            }
         }
         catch (\Exception $e)
         {

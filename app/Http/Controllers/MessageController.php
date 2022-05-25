@@ -21,6 +21,65 @@ use App\Jobs\CheckMessageStatus;
 use Validator;
 use Illuminate\Validation\Rule;
 
+function periodFromStr(string $s): int
+{
+    // 2022
+    if (mb_strripos( $s, '05.2022')>-1) {
+        return 20;
+    }
+    if (mb_strripos( $s, '04.2022')>-1) {
+        return 19;
+    }
+    
+    if (mb_strripos( $s, '03.2022')>-1) {
+        return 18;
+    }
+    if (mb_strripos( $s, '02.2022')>-1) {
+        return 17;
+    }
+    if (mb_strripos( $s, '01.2022')>-1) {
+        return 16;
+    }
+    // 2021
+    if (mb_strripos( $s, '01.2021')>-1) {
+        return 1;
+    }
+    if (mb_strripos( $s, '02.2021')>-1) {
+        return 2;
+    }
+    if (mb_strripos( $s, '03.2021')>-1) {
+        return 3;
+    }
+    if (mb_strripos( $s, '04.2021')>-1) {
+        return 4;
+    }
+    if (mb_strripos( $s, '05.2021')>-1) {
+        return 5;
+    }
+    if (mb_strripos( $s, '06.2021')>-1) {
+        return 9;
+    }
+    if (mb_strripos( $s, '07.2021')>-1) {
+        return 10;
+    }
+    if (mb_strripos( $s, '08.2021')>-1) {
+        return 11;
+    }
+    if (mb_strripos( $s, '09.2021')>-1) {
+        return 12;
+    }
+    if (mb_strripos( $s, '10.2021')>-1) {
+        return 13;
+    }
+    if (mb_strripos( $s, '11.2021')>-1) {
+        return 14;
+    }
+    if (mb_strripos( $s, '12.2021')>-1) {
+        return 15;
+    }
+    return -1;
+}
+
 class MessageController extends Controller
 {
     /**
@@ -34,7 +93,7 @@ class MessageController extends Controller
         
         $validator = Validator::make($request->all(), [
             'type'      => 'array',
-            'type.*'    => 'string|in:notype,bill,mek,mee,reconciliation-act,reg,agreement-fin,contract-payment-oms|distinct|exists:App\Models\MessageType,name',
+            'type.*'    => 'string|in:notype,bill,mek,mee,reconciliation-act,reg,agreement-fin,contract-payment-oms,contract-financial-support-oms,agreement-fin-salaries|distinct|exists:App\Models\MessageType,name',
             'status'   => 'array',
             'status.*'    => 'string|distinct|exists:App\Models\MessageStatus,name',
             'period'   => 'array',
@@ -176,11 +235,14 @@ class MessageController extends Controller
         $buch = [134, 171];
         $omszpz = [85, 84, 86];
         $leadership = [11, 88];
+        $myagkaya = [193];
         $accountant = [134];
         $lawyers = [189,190]; // Юристы
         // Страховые
         $astra = [35, 79];
         $kapital = [32];
+        // Департамента здравоохранения
+        $dzo = [196];
         // Для писем "почта" (тип не указан)
         if (!$request->type) {
             /* TODO:
@@ -231,52 +293,9 @@ class MessageController extends Controller
             $msg->to()->syncWithoutDetaching($attachUsersArr);
             
             // Период
-            if (mb_strripos( $msg->subject, '01.2021')>-1) {
-                $msg->period_id = 1;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '02.2021')>-1) {
-                $msg->period_id = 2;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '03.2021')>-1) {
-                $msg->period_id = 3;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '04.2021')>-1) {
-                $msg->period_id = 4;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '05.2021')>-1) {
-                $msg->period_id = 5;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '06.2021')>-1) {
-                $msg->period_id = 9;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '07.2021')>-1) {
-                $msg->period_id = 10;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '08.2021')>-1) {
-                $msg->period_id = 11;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '09.2021')>-1) {
-                $msg->period_id = 12;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '10.2021')>-1) {
-                $msg->period_id = 13;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '11.2021')>-1) {
-                $msg->period_id = 14;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '12.2021')>-1) {
-                $msg->period_id = 15;
+            $pId = periodFromStr($msg->subject);
+            if ($pId > 0) {
+                $msg->period_id = $pId;
                 $msg->save();
             }
         }
@@ -336,52 +355,9 @@ class MessageController extends Controller
             $msg->to()->syncWithoutDetaching($attachUsersArr);
             
             // Период
-            if (mb_strripos( $msg->subject, '01.2021')>-1) {
-                $msg->period_id = 1;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '02.2021')>-1) {
-                $msg->period_id = 2;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '03.2021')>-1) {
-                $msg->period_id = 3;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '04.2021')>-1) {
-                $msg->period_id = 4;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '05.2021')>-1) {
-                $msg->period_id = 5;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '06.2021')>-1) {
-                $msg->period_id = 9;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '07.2021')>-1) {
-                $msg->period_id = 10;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '08.2021')>-1) {
-                $msg->period_id = 11;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '09.2021')>-1) {
-                $msg->period_id = 12;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '10.2021')>-1) {
-                $msg->period_id = 13;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '11.2021')>-1) {
-                $msg->period_id = 14;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '12.2021')>-1) {
-                $msg->period_id = 15;
+            $pId = periodFromStr($msg->subject);
+            if ($pId > 0) {
+                $msg->period_id = $pId;
                 $msg->save();
             }
         }
@@ -426,52 +402,9 @@ class MessageController extends Controller
             $msg->to()->syncWithoutDetaching($attachUsersArr);
             
             // Период
-            if (mb_strripos( $msg->subject, '01.2021')>-1) {
-                $msg->period_id = 1;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '02.2021')>-1) {
-                $msg->period_id = 2;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '03.2021')>-1) {
-                $msg->period_id = 3;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '04.2021')>-1) {
-                $msg->period_id = 4;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '05.2021')>-1) {
-                $msg->period_id = 5;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '06.2021')>-1) {
-                $msg->period_id = 9;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '07.2021')>-1) {
-                $msg->period_id = 10;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '08.2021')>-1) {
-                $msg->period_id = 11;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '09.2021')>-1) {
-                $msg->period_id = 12;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '10.2021')>-1) {
-                $msg->period_id = 13;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '11.2021')>-1) {
-                $msg->period_id = 14;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '12.2021')>-1) {
-                $msg->period_id = 15;
+            $pId = periodFromStr($msg->subject);
+            if ($pId > 0) {
+                $msg->period_id = $pId;
                 $msg->save();
             }
         }
@@ -487,59 +420,17 @@ class MessageController extends Controller
             $attachUsersArr = array_merge(
                 $attachUsersArr,
                 $omszpz,
-                $leadership
+                $leadership,
+                $myagkaya
             );
             
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
             
             // Период
-            if (mb_strripos( $msg->subject, '01.2021')>-1) {
-                $msg->period_id = 1;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '02.2021')>-1) {
-                $msg->period_id = 2;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '03.2021')>-1) {
-                $msg->period_id = 3;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '04.2021')>-1) {
-                $msg->period_id = 4;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '05.2021')>-1) {
-                $msg->period_id = 5;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '06.2021')>-1) {
-                $msg->period_id = 9;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '07.2021')>-1) {
-                $msg->period_id = 10;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '08.2021')>-1) {
-                $msg->period_id = 11;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '09.2021')>-1) {
-                $msg->period_id = 12;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '10.2021')>-1) {
-                $msg->period_id = 13;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '11.2021')>-1) {
-                $msg->period_id = 14;
-                $msg->save();
-            }
-            if (mb_strripos( $msg->subject, '12.2021')>-1) {
-                $msg->period_id = 15;
+            $pId = periodFromStr($msg->subject);
+            if ($pId > 0) {
+                $msg->period_id = $pId;
                 $msg->save();
             }
         }
@@ -602,6 +493,31 @@ class MessageController extends Controller
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
         }
+        // Для СОГЛАШЕНИЙ о софинансировании ЗП
+        if ($request->type == 'agreement-fin-salaries') {
+            $attachUsersArr = [$msg->user_id];
+            $orgId = $request->toOrg[0];
+            $toOrg  = Organization::find($orgId);
+            $msg->organization_id = $toOrg->id;
+            $msg->save();
+            $orgUsers = $toOrg->users()->with('permissions')->get();
+            // Добавляем пользователей подписывающих соглашения 
+            // со стороны мед.организации
+            foreach ($orgUsers as $u) {
+                if (
+                    $u->hasPermissionTo('sign-mo-lider agreement-fin-salaries')
+                ) {
+                    $attachUsersArr[] = $u->id;
+                }
+            }
+            // Для ФИН и ЮР отделов и Руководства
+            $attachUsersArr = array_merge($attachUsersArr,$fin,$lawyers,$leadership);
+            // Для Департамента здравоохранения
+            $attachUsersArr = array_merge($attachUsersArr,$dzo);
+            
+            $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
+            $msg->to()->syncWithoutDetaching($attachUsersArr);
+        }
         // Для ДОГОВОРОВ НА ОПЛАТУ ПО ОМС
         if ($request->type == 'contract-payment-oms') {
             $attachUsersArr = [$msg->user_id];
@@ -621,6 +537,29 @@ class MessageController extends Controller
             }
             // Для ЮР отдела, Руководства, Астрамед и Капитал
             $attachUsersArr = array_merge($attachUsersArr,$lawyers,$leadership,$astra,$kapital);
+            
+            $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
+            $msg->to()->syncWithoutDetaching($attachUsersArr);
+        }
+        // Для ДОГОВОРОВ О ФИНАНСОВОМ ОБЕСПЕЧЕНИИ ОМС
+        if ($request->type == 'contract-financial-support-oms') {
+            $attachUsersArr = [$msg->user_id];
+            $orgId = $request->toOrg[0];
+            $toOrg  = Organization::find($orgId);
+            $msg->organization_id = $toOrg->id;
+            $msg->save();
+            $orgUsers = $toOrg->users()->with('permissions')->get();
+            // Добавляем пользователей подписывающих договор 
+            // со стороны СМО
+            foreach ($orgUsers as $u) {
+                if (
+                    $u->hasPermissionTo('sign-smo-lider contract-financial-support-oms')
+                ) {
+                    $attachUsersArr[] = $u->id;
+                }
+            }
+            // Для ЮР отдела, Руководства
+            $attachUsersArr = array_merge($attachUsersArr,$lawyers,$leadership);
             
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
