@@ -24,13 +24,24 @@ use Illuminate\Validation\Rule;
 function periodFromStr(string $s): int
 {
     // 2022
+    if (mb_strripos( $s, '09.2022')>-1) {
+        return 24;
+    }
+    if (mb_strripos( $s, '08.2022')>-1) {
+        return 23;
+    }
+    if (mb_strripos( $s, '07.2022')>-1) {
+        return 22;
+    }
+    if (mb_strripos( $s, '06.2022')>-1) {
+        return 21;
+    }
     if (mb_strripos( $s, '05.2022')>-1) {
         return 20;
     }
     if (mb_strripos( $s, '04.2022')>-1) {
         return 19;
     }
-    
     if (mb_strripos( $s, '03.2022')>-1) {
         return 18;
     }

@@ -88,10 +88,11 @@ Route::get('/', function () {
     //$permission->delete();
    
     
-/*   
+/*    
     // $signs = FileSign::All();
-    $signs = FileSign::whereIn('id',[96077])->get();
+    $signs = FileSign::whereIn('id',[115908])->get();
     // $signs = FileSign::where('user_id',158)->get();
+    // $signs = FileSign::whereNull('verified_on_server_at')->get();
     // $signs = FileSign::where('id','>',81899)->where('id','<',81914)->get();
     // return $sign;
     foreach($signs as $sign)
@@ -99,7 +100,7 @@ Route::get('/', function () {
         echo $sign->id;
         ProcessSign::dispatch($sign);
     }
-   */ 
+   */
 /*
     $role = Role::create(['name' => 'buch']);
     $permission = Permission::where('name', 'send reconciliation-act')->first();
@@ -153,9 +154,9 @@ Route::get('/', function () {
     
     /*
 
-    $msgs = Message::whereIn('id',[28752])->get();
+    $msgs = Message::whereIn('id',[35204, 35213])->get();
     //$msgs = Message::where('type_id',3)->where('created_at','>','2022-01-18')->where('created_at','<','2022-01-20')->get();
-    //$msgs = Message::where('organization_id',70)->get();//->where('created_at','>','2022-02-25')
+    //$msgs = Message::where('organization_id',38)->where('created_at','>','2022-07-28')->get();//
     foreach ($msgs as $msg) {
         // Пометить подписи пользователя как удаленные
         //foreach($msg->files as $f) {
@@ -169,15 +170,15 @@ Route::get('/', function () {
         CheckMessageStatus::dispatch($msg);
     }
     return 'ok';  
-     */
-    
-    
+*/     
+
+
 
 
 //$users = PD::all();
 //return $users;
 /* 
-    $monthNum = '05';
+    $monthNum = '09';
     $year = '2022';
     //$tz = new DateTimeZone( '+0500' );
     $month = new DateTime("${year}-${monthNum}-01T00:00:00.000000+0500");
@@ -187,9 +188,9 @@ Route::get('/', function () {
     $to->setTimezone(new DateTimeZone('UTC'));
     Period::firstOrCreate(['from' => $from, 'to' => $to]);
     
-    return $period;
-*/   
-    
+    return $monthNum;
+*/
+
     /*
     $messenges = Message::withTrashed()->where('type_id',2)->get();
     foreach ($messenges as $msg) {
@@ -248,8 +249,8 @@ Route::get('/', function () {
     
 /*   
     // Регистрация руководителя МО
-    $userHeadId = 208;
-    $oldHeadId = 203;
+    $userHeadId = 215;
+    $oldHeadId = 205;
      $user = User::find($userHeadId);
     $user->assignRole('mo');
     $user->assignRole('mo-lider');
@@ -272,22 +273,23 @@ Route::get('/', function () {
     forwardInMsg($oldHeadId, [$userHeadId], 7);
     // Пересылаем договоры на оказание и оплату МП по ОМС полученые пользователем
     forwardInMsg($oldHeadId, [$userHeadId], 8);
-    
+  */  
     // Переслать cчета отправленные пользователем
     //forwardMsg(126, [$userHeadId], 2);
     // Переслать реестры отправленные пользователем
     //forwardMsg(126, [$userHeadId], 6);
-   
-    //$oldHeadId = 46;
+    
+    //$oldHeadId = 185;
     // Убрать роль руководителя у предыдущего руководителя
-    $oldHead = User::find($oldHeadId);
-    $oldHead->removeRole('mo-lider');
-*/
+    //$oldHead = User::find($oldHeadId);
+    ////$oldHead->assignRole('mo-lider');
+    //$oldHead->removeRole('mo-lider');
+
 /* 
     // Регистрация главного бухгалтера МО
-    $userHeadId = 33;
-    $userAccountantId = 207;
-    $oldAccountantId = 97;
+    $userHeadId = 182;
+    $userAccountantId = 216;
+    $oldAccountantId = 0;
     $user = User::find($userAccountantId);
     $user->assignRole('mo');
     $user->assignRole('mo-chief-accountant'); 
@@ -308,10 +310,10 @@ Route::get('/', function () {
     forwardMsg($oldAccountantId, [$userAccountantId], 6);
     
     // Убрать роль главного бухгалтера у предыдущего главбуха
-    $oldAccountant = User::find($oldAccountantId);
-    $oldAccountant->removeRole('mo-chief-accountant');
-    return 'ok';   
-*/
+    //$oldAccountant = User::find($oldAccountantId);
+    //$oldAccountant->removeRole('mo-chief-accountant');
+    return 'ok '.$userAccountantId;   
+
 
     return 'ok';
     
@@ -333,7 +335,7 @@ Route::get('/', function () {
     }
     
     return 'ok'; 
-    
+*/    
     
     /*
     // Перенос из МЭКов в Акты сверки
@@ -439,7 +441,7 @@ Route::get('/', function () {
         return 'null';
     }
     return $cryptoCert;
-    */    
+       */ 
     
     /*
     $files = FileSignStamp::where('stamped_file_path',null)->get();
