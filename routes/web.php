@@ -36,47 +36,17 @@ use Illuminate\Support\Facades\DB;
 */
 
 
-/**
- * Переслать сообщения отправленные пользователем.
- *
- * 
- * 
- */
-function forwardMsg($msgSenderId, $attachToUsersIdArr, $msgTypeId)
-{
-    $msges = Message::where('user_id',$msgSenderId)->where('type_id', $msgTypeId)->get();
-    foreach ($msges as $msg) {
-        $msg->to()->syncWithoutDetaching($attachToUsersIdArr);
-    }
-}
-
-/**
- * Переслать сообщения полученные пользователем.
- *
- * 
- * 
- */
-function forwardInMsg($msgRecipientId, $attachToUsersIdArr, $msgTypeId)
-{
-    $user = User::find($msgRecipientId);
-    $msges = $user->incomingMessages()->where('type_id',$msgTypeId)->get();
-    foreach ($msges as $msg) {
-
-        $msg->to()->syncWithoutDetaching($attachToUsersIdArr);
-    }
-}
-
 Route::get('/', function () {
-    
+
     //phpinfo();
     //CreateSignStamp::dispatch(File::find(36451));
     //$certs = File::find(19684)->signCerts()->distinct()->get();
     //return $certs;
-  /*  
+  /*
     $permission = Permission::create(['name' => 'send agreement-fin-salaries']);
     $role = Role::where('name', 'fin')->first();
     $role->givePermissionTo($permission);
-  */ 
+  */
   /*
     $permission = Permission::where('name', 'send reconciliation-act')->first();
     $role = Role::where('name', 'leadership')->first();
@@ -84,11 +54,11 @@ Route::get('/', function () {
     //$role->revokePermissionTo($permission);
     //$role->givePermissionTo($permission);
   */
-  
+
     //$permission->delete();
-   
-    
-/*    
+
+
+/*
     // $signs = FileSign::All();
     $signs = FileSign::whereIn('id',[115908])->get();
     // $signs = FileSign::where('user_id',158)->get();
@@ -115,9 +85,9 @@ Route::get('/', function () {
     //$user->removeRole('mo-lider');
     //$user->assignRole('smo-lider');
     //$user->assignRole('tfoms');
-    
-    
-    
+
+
+
 
     /*
     $messenges = Message::withTrashed()->where('type_id',5)->get();
@@ -129,19 +99,19 @@ Route::get('/', function () {
                  $user = $u;
             }
         }
-        
+
         echo $msg->id;
         echo ': ';
         echo $msg->subject;
         echo ' : ';
-        
+
         if (!$user) {
             echo '!!!!!!!!!!!!!!';
             continue;
         }
-        
+
         $org  = $user->organization;
-    
+
         echo $org->name;
         echo ' : ';
         echo $user->name;
@@ -151,7 +121,7 @@ Route::get('/', function () {
     }
     return 'ок';
     */
-    
+
     /*
 
     $msgs = Message::whereIn('id',[35204, 35213])->get();
@@ -169,15 +139,15 @@ Route::get('/', function () {
         //}
         CheckMessageStatus::dispatch($msg);
     }
-    return 'ok';  
-*/     
+    return 'ok';
+*/
 
 
 
 
 //$users = PD::all();
 //return $users;
-/* 
+/*
     $monthNum = '09';
     $year = '2022';
     //$tz = new DateTimeZone( '+0500' );
@@ -187,7 +157,7 @@ Route::get('/', function () {
     $from->setTimezone(new DateTimeZone('UTC'));
     $to->setTimezone(new DateTimeZone('UTC'));
     Period::firstOrCreate(['from' => $from, 'to' => $to]);
-    
+
     return $monthNum;
 */
 
@@ -209,10 +179,10 @@ Route::get('/', function () {
     }
     return 'ок';
     */
-    
+
     /*
     // Определяем период по теме
-    
+
     foreach ($messenges as $msg) {
         if (
             mb_strripos( $msg->subject, '01.2021') > -1 ||
@@ -227,13 +197,13 @@ Route::get('/', function () {
         echo ': ';
         echo $msg->subject;
         echo '<br>';
-       
+
     }
     return 'ok';
     */
-    
+
     /*
-    // Удалить письма (3 - МЭКи) пользователя 
+    // Удалить письма (3 - МЭКи) пользователя
     $user = User::find(89);
     $messenges = $user->outgoingMessages()->where('type_id',3)->get();
     foreach ($messenges as $msg) {
@@ -243,87 +213,19 @@ Route::get('/', function () {
         echo '<br>';
         $msg->delete();
     }
-    
+
     return 'ok';
     */
-    
-/*   
-    // Регистрация руководителя МО
-    $userHeadId = 215;
-    $oldHeadId = 205;
-     $user = User::find($userHeadId);
-    $user->assignRole('mo');
-    $user->assignRole('mo-lider');
 
-    // Переслать cчета отправленные пользователем
-    //forwardMsg(25, [$userHeadId], 2);
-    // Пересылаем cчета полученые пользователем
-    forwardInMsg($oldHeadId, [$userHeadId], 2);
-    // Пересылаем акты сверки полученые пользователем
-    forwardInMsg($oldHeadId, [$userHeadId], 5);
-    // Пересылаем акты МЭК полученые пользователем
-    forwardInMsg($oldHeadId, [$userHeadId], 3);
-    // Пересылаем акты МЭЭ полученые пользователем
-    forwardInMsg($oldHeadId, [$userHeadId], 4);
-    // Переслать реестры отправленные пользователем
-    //forwardMsg(25, [$userHeadId], 6);
-    // Пересылаем реестры полученые пользователем
-    forwardInMsg($oldHeadId, [$userHeadId], 6);
-    // Пересылаем соглашения(фин) полученые пользователем
-    forwardInMsg($oldHeadId, [$userHeadId], 7);
-    // Пересылаем договоры на оказание и оплату МП по ОМС полученые пользователем
-    forwardInMsg($oldHeadId, [$userHeadId], 8);
-  */  
-    // Переслать cчета отправленные пользователем
-    //forwardMsg(126, [$userHeadId], 2);
-    // Переслать реестры отправленные пользователем
-    //forwardMsg(126, [$userHeadId], 6);
-    
-    //$oldHeadId = 185;
-    // Убрать роль руководителя у предыдущего руководителя
-    //$oldHead = User::find($oldHeadId);
-    ////$oldHead->assignRole('mo-lider');
-    //$oldHead->removeRole('mo-lider');
+/*
 
-/* 
-    // Регистрация главного бухгалтера МО
-    $userHeadId = 182;
-    $userAccountantId = 216;
-    $oldAccountantId = 0;
-    $user = User::find($userAccountantId);
-    $user->assignRole('mo');
-    $user->assignRole('mo-chief-accountant'); 
-  
-    // Переслать cчета отправленные пользователем
-    forwardMsg($userHeadId, [$userAccountantId], 2);
-    // Пересылаем акты сверки полученые пользователем
-    forwardInMsg($userHeadId, [$userAccountantId], 5);
-    // Переслать реестры отправленные пользователем
-    forwardMsg($userHeadId, [$userAccountantId], 6);
-    
-    
-    // Переслать cчета отправленные пользователем
-    forwardMsg($oldAccountantId, [$userAccountantId], 2);
-    // Пересылаем акты сверки полученые пользователем
-    forwardInMsg($oldAccountantId, [$userAccountantId], 5);
-    // Переслать реестры отправленные пользователем
-    forwardMsg($oldAccountantId, [$userAccountantId], 6);
-    
-    // Убрать роль главного бухгалтера у предыдущего главбуха
-    //$oldAccountant = User::find($oldAccountantId);
-    //$oldAccountant->removeRole('mo-chief-accountant');
-    return 'ok '.$userAccountantId;   
-
-
-    return 'ok';
-    
     //$messenges = Message::All();
     $messenges = Message::where('type_id',5)->get();
-    
+
     foreach ($messenges as $msg) {
         $toUsers = $msg->to;
         $files = $msg->files;
-        
+
         foreach ($toUsers as $u) {
             echo $u->name;
             echo '<br>';
@@ -333,10 +235,10 @@ Route::get('/', function () {
             echo '<br>';
         }
     }
-    
-    return 'ok'; 
-*/    
-    
+
+    return 'ok';
+*/
+
     /*
     // Перенос из МЭКов в Акты сверки
     $peo = [67, 71, 72, 73, 89];
@@ -345,7 +247,7 @@ Route::get('/', function () {
     $leadership = [11, 88];
     $accountant = [134];
     $msgs = Message::withTrashed()->where('type_id',5)->get();
-    
+
     foreach ($msgs as $msg) {
         $toUsers = $msg->to;
         $toUser = null;
@@ -364,11 +266,11 @@ Route::get('/', function () {
             echo 'NO';
             echo '<br>';
         }
-  
-      
+
+
         $orgUsers = $toOrg->users()->with('permissions')->get();
 
-        // Добавляем пользователей подписывающих акты 
+        // Добавляем пользователей подписывающих акты
         // со стороны мед.организации
         $attachUsersArr = [];
         foreach ($orgUsers as $u) {
@@ -389,47 +291,47 @@ Route::get('/', function () {
             $leadership,
             $accountant
         );
-        
+
         $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
         $msg->to()->sync($attachUsersArr);//WithoutDetaching
     }
     return 'ok2';
     */
-    
-    
-    
+
+
+
     //$permission = Permission::where('name', 'reject mek')->first();
     //$role = Role::where('name', 'leadership')->first();
     //$role->givePermissionTo($permission);
-    
+
     // $permission = Permission::create(['name' => 'reject mek']);
 
     // $permission->delete();
     // $role = Role::create(['name' => 'tf-chief-accountant']);
-    // 
-    // 
+    //
+    //
     // $role->revokePermissionTo($permission);
     //
     // $user->removeRole('mo');
-    // $user->assignRole('mo-chief-accountant');    
-    
-   
+    // $user->assignRole('mo-chief-accountant');
+
+
     return 'ok';
-    
+
     // return User::doesntHave('roles')->get();
 
 
     $users = $role->users;
-    
+
     foreach($users as $user) {
         echo "{$user->id} {$user->name} {$user->job_title} {$user->hasPermissionTo('sign-mo-lider mek')}";
         echo '<br>';
     }
-    
+
     return 'ok';
 
-    
-    
+
+
     $permissions = $user->getAllPermissions()->pluck('name');
     //$b = array_map(function($p){return $p['name'];}, $permissions);
     return $permissions;
@@ -441,8 +343,8 @@ Route::get('/', function () {
         return 'null';
     }
     return $cryptoCert;
-       */ 
-    
+       */
+
     /*
     $files = FileSignStamp::where('stamped_file_path',null)->get();
     foreach($files as $file)
@@ -451,7 +353,7 @@ Route::get('/', function () {
     }
     */
 
-   
+
 
     //return phpinfo();
 });

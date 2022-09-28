@@ -29,11 +29,16 @@ class UserResource extends JsonResource
                 'created_at' => $this->created_at,
                 'updated_at' => $this->updated_at
             ],
+            'relationships' => [
+                'roles' => [
+                    'data' => new RoleCollection($this->roles),
+                ],
+            ],
            // 'relationships' => new EmployeeRelationshipResource($this),
             'links'         => [
                 'self' => route('users.show', ['user' => $this->id]),
             ],
-            
+
         ];
     }
 }

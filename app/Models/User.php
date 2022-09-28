@@ -34,7 +34,7 @@ class User extends Authenticatable implements JWTSubject
         'snils',
         'branch'
     ];
-    
+
     /**
      * The attributes that should be hidden for arrays.
      *
@@ -53,7 +53,7 @@ class User extends Authenticatable implements JWTSubject
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-    
+
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *
@@ -70,23 +70,23 @@ class User extends Authenticatable implements JWTSubject
      */
     public function getJWTCustomClaims() {
         return [];
-    }    
-    
+    }
+
     public function files()
     {
         return $this->hasMany(File::class, 'user_id', 'id');
     }
-    
+
     public function outgoingMessages()
     {
         return $this->hasMany(Message::class, 'user_id', 'id');
     }
-    
+
     public function incomingMessages()
     {
         return $this->belongsToMany(Message::class, 'tbl_msg_to_users', 'user_id', 'msg_id')->using(MessageToUsers::class);
     }
-    
+
     public function organization()
     {
         return $this->belongsTo(Organization::class, 'organization_id', 'id');

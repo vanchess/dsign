@@ -16,7 +16,7 @@ class AlterMsgTable extends Migration
         Schema::table('tbl_msg', function (Blueprint $table) {
             $table->foreignId('period_id')->nullable();
             $table->foreignId('organization_id')->nullable();
-            
+
             $table->foreign('period_id')->references('id')->on('tbl_period')->onUpdate('cascade')->onDelete('restrict');
             $table->foreign('organization_id')->references('id')->on('tbl_organization')->onUpdate('cascade')->onDelete('restrict');
         });
@@ -29,7 +29,10 @@ class AlterMsgTable extends Migration
      */
     public function down()
     {
-        $table->dropForeign(['period_id','organization_id']);
-        $table->dropColumn(['period_id','organization_id']);
+        Schema::table('tbl_msg', function (Blueprint $table) {
+            $table->dropForeign(['period_id','organization_id']);
+            $table->dropColumn(['period_id','organization_id']);
+        });
+
     }
 }

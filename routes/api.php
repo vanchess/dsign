@@ -17,6 +17,8 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\PeriodController;
 use App\Http\Controllers\PDController;
+use App\Http\Controllers\UserRoleController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -29,7 +31,7 @@ use App\Http\Controllers\PDController;
 */
 Route::group(array('prefix' => 'v1'), function()
 {
-    
+
     Route::middleware('auth:api')->group(function()
     {
         Route::post('/upload-file',  [FileUpload::class, 'fileUpload'])->name('fileUpload');
@@ -42,8 +44,10 @@ Route::group(array('prefix' => 'v1'), function()
             return $request->user();
         });
         */
-        
+
         Route::apiResource('my-files', FileController::class);
+        Route::post('users/{userId}/assign-role/{roleName}', [UserRoleController::class, 'assignRole'])->where('userId', '[0-9]+');
+        Route::post('users/{userId}/remove-role/{roleName}', [UserRoleController::class, 'removeRole'])->where('userId', '[0-9]+');
         Route::apiResources([
             'msg-status' => MessageStatusController::class,
             'msg' => MessageController::class,
@@ -57,17 +61,17 @@ Route::group(array('prefix' => 'v1'), function()
         Route::apiResource('file.sign', FileFileSignController::class);
 
     });
-    
+
     /*
     Route::get('/users', function (Request $request) {
         return $request->user();
     });
     */
-    
+
     Route::apiResource('organization', OrganizationController::class);
     Route::apiResource('invite', InviteController::class);
     Route::apiResource('pd', PDController::class);
-    
+
     Route::group(['middleware' => 'api','prefix' => 'auth'], function ($router) {
         Route::post('/login', [AuthController::class, 'login'])->name('login');
         Route::post('/register', [AuthController::class, 'register']);

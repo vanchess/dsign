@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
@@ -6,10 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Validator;
 
 use App\Models\Organization;
 use App\Models\Invite;
+use App\Services\UserRoleService;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -34,11 +36,11 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required|string|min:6',
         ]);
-        
+
         if ($validator->fails()) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
-        
+
         if (! $token = auth()->attempt($validator->validated())) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
@@ -51,7 +53,7 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function register(Request $request) {
+    public function register(Request $request, UserRoleService $userRoleService) {
         $validator = Validator::make($request->all(), [
             //'name' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:users',
@@ -68,7 +70,7 @@ class AuthController extends Controller
         if($validator->fails()){
             return response()->json($validator->errors()->toJson(), 400);
         }
-        
+
         // Получаем из инвайта принудительно заданные свойства
         $inv = Invite::where('invite',$request->invite)->where('user_id',null)->firstOrFail();
         $org = [];
@@ -76,9 +78,10 @@ class AuthController extends Controller
         if ($inv->options['organization_id']['forced']) {
             $org = [ 'organization_id' => $inv->options['organization_id']['value'] ];
         }
-      
+
         $organization = Organization::find($request->organization_id);
-        
+        $organizationType = $organization->type->name;
+
         $fn = mb_substr($request->first_name, 0, 1);
         $mn = mb_substr($request->middle_name, 0, 1);
         $name = "{$organization->short_name} [{$request->last_name} {$fn}. {$mn}.]";
@@ -88,10 +91,12 @@ class AuthController extends Controller
                     ['password' => bcrypt($request->password), 'name' => $name ],
                     $org
                 ));
-        
+
         $inv->user_id = $user->id;
         $inv->save();
-        
+
+        $userRoleService->assignRole($user->id, $organizationType, $user->id);
+
         return response()->json([
             'message' => 'User successfully registered',
             'user' => $user
@@ -140,7 +145,7 @@ class AuthController extends Controller
     protected function respondWithToken($token)
     {
         $user = auth()->user();
-        
+
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
