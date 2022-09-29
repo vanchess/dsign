@@ -30,7 +30,8 @@ class ForwardMsg implements ShouldQueue
     public function handle(UserRoleAdd $event)
     {
         if ($event->roleName === 'mo-lider' || $event->roleName === 'mo-chief-accountant') {
-            $from = $date = new \DateTime('-6 month');
+            //$from = $date = new \DateTime('-6 month');
+            $from = $date = new \DateTime('01-01-2021');
             $user = User::find($event->userId);
 
             if ($event->roleName === 'mo-lider') {
