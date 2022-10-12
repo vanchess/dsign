@@ -10,6 +10,9 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class ForwardMsg implements ShouldQueue
 {
+    public $timeout = 300;
+    public $tries = 5;
+
     private $messageForwardService;
     /**
      * Create the event listener.
