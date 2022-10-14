@@ -24,6 +24,9 @@ use Illuminate\Validation\Rule;
 function periodFromStr(string $s): int
 {
     // 2022
+    if (mb_strripos( $s, '10.2022')>-1) {
+        return 25;
+    }
     if (mb_strripos( $s, '09.2022')>-1) {
         return 24;
     }
@@ -101,7 +104,7 @@ class MessageController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        
+
         $validator = Validator::make($request->all(), [
             'type'      => 'array',
             'type.*'    => 'string|in:notype,bill,mek,mee,reconciliation-act,reg,agreement-fin,contract-payment-oms,contract-financial-support-oms,agreement-fin-salaries|distinct|exists:App\Models\MessageType,name',
@@ -116,7 +119,7 @@ class MessageController extends Controller
         if($validator->fails()){
             return response()->json($validator->errors()->toJson(), 400);
         }
-        
+
         $perPage = (int)$request->input('per_page', 0);
         $msgIsIncoming = (bool)$request->input('in', false);
         if ($msgIsIncoming){
@@ -124,17 +127,17 @@ class MessageController extends Controller
         } else {
             $sql = $user->outgoingMessages(); // Отправленные
         }
-        // Статус 
+        // Статус
         $statuses = [];
         if (!empty($request->status)) {
             $statuses = MessageStatus::whereIn('name',$request->status)->pluck('id');
         } else {
-            // по умолчанию 
+            // по умолчанию
             $defaultStatuses = ['sent','signed_by_specialist','signed_by_head','ready','no_files','signed_mo','signing','rejected_flc','in_progress','loaded','sent-to-smo'];
             $statuses = MessageStatus::whereIn('name',$defaultStatuses)->pluck('id');
         }
         $sql = $sql->whereIn('status_id',$statuses);
-        // Тип 
+        // Тип
         $types = [];
         if (!empty($request->type)) {
             $types = MessageType::whereIn('name',$request->type)->pluck('id');
@@ -157,7 +160,7 @@ class MessageController extends Controller
             $result = $sql->paginate(999999999);
             return new MessageCollection($result);
         }
-        
+
         return new MessageCollection($sql->paginate($perPage));
         // return $sql->paginate($perPage);
     }
@@ -172,7 +175,7 @@ class MessageController extends Controller
     {
         $user = Auth::user();
         $userId = $user->id;
-        
+
         $validator = Validator::make($request->all(), [
             'subject' => 'required|string',
             'text'    => 'nullable|string',
@@ -197,15 +200,15 @@ class MessageController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 400);
         }
-        
+
         $this->authorize('create', [Message::class, $request->type]);
-        
+
         $msg = new Message();
         $msg->subject   = $request->subject;
         $msg->text      = $request->text;
         $msg->status_id = 2;
         $msg->user_id   = $userId;
-        // Тип 
+        // Тип
         $type = null;
         if ($request->type) {
             $type = MessageType::where('name',$request->type)->first();
@@ -215,17 +218,17 @@ class MessageController extends Controller
         }
         $msg->type_id   = $type->id;
         $msg->save();
-        
+
         $msg->to()->attach($request->to);
 
         if (!empty($request->attach)) {
             $msg->files()->attach($request->attach);
         }
-        
+
         if (!empty($request->category)) {
             $msg->category()->attach($request->category);
         }
-        
+
         // TODO: сделать нормально
         // 67 - Баскова
         // 71 - Романенко
@@ -258,7 +261,7 @@ class MessageController extends Controller
         if (!$request->type) {
             /* TODO:
                 Временное решение.
-                Все письма в разделе почта отправленные одному из абонентов отдела ПЭО 
+                Все письма в разделе почта отправленные одному из абонентов отдела ПЭО
                 дублируются для всего отдела (все сотрудники отдела добавляются в получатели)
             */
             $attachUsersArr = [];
@@ -278,7 +281,7 @@ class MessageController extends Controller
         }
         // Для счетов
         if ($request->type == 'bill') {
-            // 
+            //
             $attachUsersArr = [$msg->user_id];
             $org  = $user->organization;
             $msg->organization_id = $org->id;
@@ -293,7 +296,7 @@ class MessageController extends Controller
                     $attachUsersArr[] = $u->id;
                 }
             }
-            
+
             $attachUsersArr = array_merge(
                 $attachUsersArr,
                 $peo,
@@ -302,7 +305,7 @@ class MessageController extends Controller
             );
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
-            
+
             // Период
             $pId = periodFromStr($msg->subject);
             if ($pId > 0) {
@@ -317,12 +320,12 @@ class MessageController extends Controller
             $msg->organization_id = $toOrg->id;
             $msg->subject   = $msg->subject . ' ' . $toOrg->short_name;
             $msg->save();
-            
+
             $attachUsersArr = [$msg->user_id];
-            
-            
+
+
             $orgUsers = $toOrg->users()->with('permissions')->get();
-            // Добавляем пользователей подписывающих акты 
+            // Добавляем пользователей подписывающих акты
             // со стороны мед.организации
             foreach ($orgUsers as $u) {
                 if (
@@ -332,7 +335,7 @@ class MessageController extends Controller
                     $attachUsersArr[] = $u->id;
                 }
             }
-            
+
             // Для МТР
             if (in_array($msg->user_id, $mtr)) {
                 $attachUsersArr = array_merge(
@@ -354,17 +357,17 @@ class MessageController extends Controller
                     $buch
                 );
             }
-            
+
             // со стороны ТФОМС
             $attachUsersArr = array_merge(
                 $attachUsersArr,
                 $leadership,
                 $accountant
             );
-            
+
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
-            
+
             // Период
             $pId = periodFromStr($msg->subject);
             if ($pId > 0) {
@@ -372,21 +375,21 @@ class MessageController extends Controller
                 $msg->save();
             }
         }
-        
+
         // Для МЭК
         if ($request->type == 'mek') {
             $toUser = User::find($request->to[0]);
             $toOrg  = $toUser->organization;
             $msg->organization_id = $toOrg->id;
             $msg->subject   = $msg->subject . ' ' . $toOrg->short_name;
-            
+
             if(isset($request->to[1])) {
                 $toUser = User::find($request->to[1]);
                 $toOrg  = $toUser->organization;
                 $msg->subject   = $msg->subject . ' (' . $toOrg->short_name . ')';
             }
             $msg->save();
-            
+
             $attachUsersArr = [];
             $attachUsersArr = array_merge(
                 $attachUsersArr,
@@ -408,10 +411,10 @@ class MessageController extends Controller
                     $mtr
                 );
             }
-            
+
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
-            
+
             // Период
             $pId = periodFromStr($msg->subject);
             if ($pId > 0) {
@@ -426,7 +429,7 @@ class MessageController extends Controller
             $msg->organization_id = $toOrg->id;
             $msg->subject   = $msg->subject . ' ' . $toOrg->short_name;
             $msg->save();
-            
+
             $attachUsersArr = [$msg->user_id];
             $attachUsersArr = array_merge(
                 $attachUsersArr,
@@ -434,10 +437,10 @@ class MessageController extends Controller
                 $leadership,
                 $myagkaya
             );
-            
+
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
-            
+
             // Период
             $pId = periodFromStr($msg->subject);
             if ($pId > 0) {
@@ -463,7 +466,7 @@ class MessageController extends Controller
                     $attachUsersArr[] = $u->id;
                 }
             }
-            
+
             // Для категории МТР
             if (in_array(3, $request->category)) {
                 $attachUsersArr = array_merge(
@@ -471,7 +474,7 @@ class MessageController extends Controller
                     $mtr
                 );
             }
-            
+
             $attachUsersArr = array_merge(
                 $attachUsersArr,
                 $peo,
@@ -489,7 +492,7 @@ class MessageController extends Controller
             $msg->organization_id = $toOrg->id;
             $msg->save();
             $orgUsers = $toOrg->users()->with('permissions')->get();
-            // Добавляем пользователей подписывающих соглашения 
+            // Добавляем пользователей подписывающих соглашения
             // со стороны мед.организации
             foreach ($orgUsers as $u) {
                 if (
@@ -500,7 +503,7 @@ class MessageController extends Controller
             }
             // Для ФИН и ЮР отделов и Руководства
             $attachUsersArr = array_merge($attachUsersArr,$fin,$lawyers,$leadership);
-            
+
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
         }
@@ -512,7 +515,7 @@ class MessageController extends Controller
             $msg->organization_id = $toOrg->id;
             $msg->save();
             $orgUsers = $toOrg->users()->with('permissions')->get();
-            // Добавляем пользователей подписывающих соглашения 
+            // Добавляем пользователей подписывающих соглашения
             // со стороны мед.организации
             foreach ($orgUsers as $u) {
                 if (
@@ -525,7 +528,7 @@ class MessageController extends Controller
             $attachUsersArr = array_merge($attachUsersArr,$fin,$lawyers,$leadership);
             // Для Департамента здравоохранения
             $attachUsersArr = array_merge($attachUsersArr,$dzo);
-            
+
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
         }
@@ -537,7 +540,7 @@ class MessageController extends Controller
             $msg->organization_id = $toOrg->id;
             $msg->save();
             $orgUsers = $toOrg->users()->with('permissions')->get();
-            // Добавляем пользователей подписывающих договор 
+            // Добавляем пользователей подписывающих договор
             // со стороны мед.организации
             foreach ($orgUsers as $u) {
                 if (
@@ -548,7 +551,7 @@ class MessageController extends Controller
             }
             // Для ЮР отдела, Руководства, Астрамед и Капитал
             $attachUsersArr = array_merge($attachUsersArr,$lawyers,$leadership,$astra,$kapital);
-            
+
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
         }
@@ -560,7 +563,7 @@ class MessageController extends Controller
             $msg->organization_id = $toOrg->id;
             $msg->save();
             $orgUsers = $toOrg->users()->with('permissions')->get();
-            // Добавляем пользователей подписывающих договор 
+            // Добавляем пользователей подписывающих договор
             // со стороны СМО
             foreach ($orgUsers as $u) {
                 if (
@@ -571,13 +574,13 @@ class MessageController extends Controller
             }
             // Для ЮР отдела, Руководства
             $attachUsersArr = array_merge($attachUsersArr,$lawyers,$leadership);
-            
+
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
         }
-            
+
         CheckMessageStatus::dispatch($msg);
-        
+
         MessageResource::withoutWrapping();
         return new MessageResource($msg);
     }
