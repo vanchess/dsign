@@ -301,7 +301,8 @@ class MessageController extends Controller
                 $attachUsersArr,
                 $peo,
                 $mtr,
-                $leadership
+                $leadership,
+                $omszpz
             );
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);

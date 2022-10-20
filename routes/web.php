@@ -22,7 +22,7 @@ use App\Models\Message;
 use App\Models\MessageStatus;
 use App\Models\Period;
 use App\Models\PD;
-
+use App\Services\MessageForwardService;
 use Illuminate\Support\Facades\DB;
 /*
 |--------------------------------------------------------------------------
@@ -36,7 +36,11 @@ use Illuminate\Support\Facades\DB;
 */
 
 
-Route::get('/', function () {
+Route::get('/', function (MessageForwardService $mfs) {
+    $from = new \DateTime('01-01-2021');
+    // [85, 84, 86]
+    $mfs->forwardMessages([2], [85, 84, 86], $from);
+    return 84;
 
     //phpinfo();
     //CreateSignStamp::dispatch(File::find(36451));

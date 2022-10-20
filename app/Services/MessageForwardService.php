@@ -18,6 +18,16 @@ class MessageForwardService {
         }
     }
 
+    public function forwardMessages(array $msgTypeIdArr, array $attachToUsersIdArr, \DateTime $fromDateTime) {
+        $msgIds = Message::whereIn('type_id', $msgTypeIdArr)
+                    ->where('created_at','>',$fromDateTime)
+                    ->get()->pluck('id');
+        foreach ($attachToUsersIdArr as $userId) {
+            $user = User::find($userId);
+            $user->incomingMessages()->syncWithoutDetaching($msgIds);
+        }
+    }
+
     /**
      * Переслать сообщения отправленные пользователем.
      *
