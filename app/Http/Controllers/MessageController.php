@@ -155,7 +155,12 @@ class MessageController extends Controller
             $sql = $sql->whereIn('period_id',$request->period);
         }
         // Добавляем вложенные сущности User(от кого, кому), Category
-        $sql = $sql->with(['to:id,name','from:id,name','category','status'])->OrderBy('created_at', 'desc');
+        //$sql = $sql->with(['to:id,name','from:id,name','category','status'])->OrderBy('created_at', 'desc');
+        $withRelations = ['to:id,name','from:id,name','category','status'];
+        if ($msgIsIncoming) {
+            $withRelations = ['from:id,name','category','status'];
+        }
+        $sql = $sql->with($withRelations)->OrderBy('created_at', 'desc');
         if($perPage == -1) {
             $result = $sql->paginate(999999999);
             return new MessageCollection($result);

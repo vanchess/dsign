@@ -34,7 +34,7 @@ class MessageResource extends JsonResource
             ],
             'relationships' => [
                 'to_users' => [
-                    'data' => new UserCollection($this->to),
+                    'data' => new UserCollection($this->whenLoaded('to')),
                 ],
                 'user' => [
                     'data' => new UserResource($this->from),
@@ -52,7 +52,7 @@ class MessageResource extends JsonResource
             'links'         => [
                 'self' => route('msg.show', ['msg' => $this->id]),
             ],
-            
+
         ];
     }
 }
