@@ -31,7 +31,7 @@ class UserResource extends JsonResource
             ],
             'relationships' => [
                 'roles' => [
-                    'data' => new RoleCollection($this->roles),
+                    'data' => new RoleCollection($this->whenLoaded('roles')),
                 ],
             ],
            // 'relationships' => new EmployeeRelationshipResource($this),

@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 
 use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class UserController  extends Controller
 {
@@ -17,10 +19,22 @@ class UserController  extends Controller
      */
     public function index(Request $request)
     {
-         
-        $perPage = (int)$request->input('per_page', 0);
-        
+        $validator = Validator::make($request->all(), [
+            'per_page' => 'int',
+            'include' => ['string', Rule::in(['roles'])],
+        ]);
+
+        if($validator->fails()){
+            return response()->json($validator->errors()->toJson(), 400);
+        }
+        $validated = $validator->validated();
+
+        $perPage = (int)$validated['per_page'] ?? 0;
+
         $sql = User::OrderBy('name');
+        if (isset($validated['include'])) {
+            $sql = $sql->with([$validated['include']]);
+        }
         if($perPage == -1) {
             $result = $sql->paginate(999999999);
             return new UserCollection($result);
