@@ -38,7 +38,7 @@ class ForwardMsg implements ShouldQueue
             $user = User::find($event->userId);
 
             if ($event->roleName === 'mo-lider') {
-                $this->messageForwardService->forwardOrganizationMessage($user->organization_id, [2,3,4,5,6,7,8], [$event->userId], $from);
+                $this->messageForwardService->forwardOrganizationMessage($user->organization_id, [2,3,4,5,6,7,8,9,10], [$event->userId], $from);
             }
             if ($event->roleName === 'mo-chief-accountant') {
                 $this->messageForwardService->forwardOrganizationMessage($user->organization_id, [2,5,6], [$event->userId], $from);

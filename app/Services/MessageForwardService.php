@@ -34,14 +34,15 @@ class MessageForwardService {
      *
      *
      */
-    /*
-    function forwardMsg(int $msgSenderId, array $attachToUsersIdArr, int $msgTypeId)
+     /*
+    function forwardMsg(int $msgSenderId, array $attachToUsersIdArr, array $msgTypeIdArr)
     {
-        $msges = Message::where('user_id',$msgSenderId)
-                    ->where('type_id', $msgTypeId)
-                    ->get();
-        foreach ($msges as $msg) {
-            $msg->to()->syncWithoutDetaching($attachToUsersIdArr);
+        $msgIds = Message::where('user_id',$msgSenderId)
+                    ->whereIn('type_id', $msgTypeIdArr)
+                    ->get()->pluck('id');
+        foreach ($attachToUsersIdArr as $userId) {
+            $user = User::find($userId);
+            $user->incomingMessages()->syncWithoutDetaching($msgIds);
         }
     }
     */
@@ -53,13 +54,18 @@ class MessageForwardService {
      *
      */
     /*
-    function forwardInMsg(int $msgRecipientId, array $attachToUsersIdArr, int $msgTypeId)
+    function forwardInMsg(int $msgRecipientId, array $attachToUsersIdArr, array $msgTypeIdArr, \DateTime $fromDateTime, \DateTime $toDateTime)
     {
         $user = User::find($msgRecipientId);
-        $msges = $user->incomingMessages()->where('type_id',$msgTypeId)->get();
-        foreach ($msges as $msg) {
-
-            $msg->to()->syncWithoutDetaching($attachToUsersIdArr);
+        $msgIds = $user->incomingMessages()
+                    ->whereIn('type_id', $msgTypeIdArr)
+                    ->whereAnd('tbl_msg.created_at','>',$fromDateTime)
+                    ->whereAnd('tbl_msg.created_at','<',$toDateTime)
+                    ->get()
+                    ->pluck('id');
+        foreach ($attachToUsersIdArr as $userId) {
+            $user = User::find($userId);
+            $user->incomingMessages()->syncWithoutDetaching($msgIds);
         }
     }
     */
