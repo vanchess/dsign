@@ -290,6 +290,7 @@ class MessageController extends Controller
             $attachUsersArr = [$msg->user_id];
             $org  = $user->organization;
             $msg->organization_id = $org->id;
+            $msg->period_id = $request->period;
             $msg->save();
             $orgUsers = $org->users()->with('permissions')->get();
             // Добавляем пользователей подписывающих счета
@@ -311,13 +312,6 @@ class MessageController extends Controller
             );
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
-
-            // Период
-            $pId = periodFromStr($msg->subject);
-            if ($pId > 0) {
-                $msg->period_id = $pId;
-                $msg->save();
-            }
         }
         // Для актов сверки
         if ($request->type == 'reconciliation-act') {
