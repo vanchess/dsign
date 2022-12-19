@@ -24,6 +24,12 @@ use Illuminate\Validation\Rule;
 function periodFromStr(string $s): int
 {
     // 2022
+    if (mb_strripos( $s, '12.2022')>-1) {
+        return 27;
+    }
+    if (mb_strripos( $s, '11.2022')>-1) {
+        return 26;
+    }
     if (mb_strripos( $s, '10.2022')>-1) {
         return 25;
     }
