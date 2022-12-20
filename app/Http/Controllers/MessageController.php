@@ -194,7 +194,10 @@ class MessageController extends Controller
             'to.*'    => 'integer|distinct|exists:App\Models\User,id',
             'toOrg'   => [
                 Rule::requiredIf(function () use ($request) {
-                    return $request->type === 'agreement-fin' || $request->type === 'contract-payment-oms';
+                    return $request->type === 'agreement-fin'
+                    || $request->type === 'contract-payment-oms'
+                    || $request->type === 'mek'
+                    || $request->type === 'mee';
                 }),
                 'array',
                 'min:1'
@@ -384,19 +387,48 @@ class MessageController extends Controller
 
         // Для МЭК
         if ($request->type == 'mek') {
-            $toUser = User::find($request->to[0]);
-            $toOrg  = $toUser->organization;
+            $orgId = $request->toOrg[0];
+            $toOrg  = Organization::find($orgId);
             $msg->organization_id = $toOrg->id;
             $msg->subject   = $msg->subject . ' ' . $toOrg->short_name;
+            $msg->save();
 
-            if(isset($request->to[1])) {
-                $toUser = User::find($request->to[1]);
-                $toOrg  = $toUser->organization;
-                $msg->subject   = $msg->subject . ' (' . $toOrg->short_name . ')';
+
+            $msg->period_id = $request->period;
+
+            // Для категории Капитал
+            if (in_array(1, $request->category)) {
+                $msg->subject   = $msg->subject . ' («Капитал МС»)';
+            }
+            // Для категории Астрамед
+            if (in_array(2, $request->category)) {
+                $msg->subject   = $msg->subject . ' («АСТРАМЕД-МС»)';
             }
             $msg->save();
 
-            $attachUsersArr = [];
+            $attachUsersArr = [$msg->user_id];
+
+            $orgUsers = $toOrg->users()->with('permissions')->get();
+            // Добавляем пользователей подписывающих МЭК
+            // со стороны мед.организации
+            foreach ($orgUsers as $u) {
+                if (
+                    $u->hasPermissionTo('sign-mo-lider mek')
+                ) {
+                    $attachUsersArr[] = $u->id;
+                }
+            }
+
+            // Для категории Капитал
+            if (in_array(1, $request->category)) {
+                $attachUsersArr[] = 32;
+            }
+            // Для категории Астрамед
+            if (in_array(2, $request->category)) {
+                $attachUsersArr[] = 35;
+                $attachUsersArr[] = 79;
+            }
+
             $attachUsersArr = array_merge(
                 $attachUsersArr,
                 $omszpz,
@@ -420,23 +452,28 @@ class MessageController extends Controller
 
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
-
-            // Период
-            $pId = periodFromStr($msg->subject);
-            if ($pId > 0) {
-                $msg->period_id = $pId;
-                $msg->save();
-            }
         }
         // Для МЭЭ
         if ($request->type == 'mee') {
-            $toUser = User::find($request->to[0]);
-            $toOrg  = $toUser->organization;
+            $orgId = $request->toOrg[0];
+            $toOrg  = Organization::find($orgId);
             $msg->organization_id = $toOrg->id;
             $msg->subject   = $msg->subject . ' ' . $toOrg->short_name;
             $msg->save();
 
             $attachUsersArr = [$msg->user_id];
+
+            $orgUsers = $toOrg->users()->with('permissions')->get();
+            // Добавляем пользователей подписывающих МЭЭ
+            // со стороны мед.организации
+            foreach ($orgUsers as $u) {
+                if (
+                    $u->hasPermissionTo('sign-mo-lider mee')
+                ) {
+                    $attachUsersArr[] = $u->id;
+                }
+            }
+
             $attachUsersArr = array_merge(
                 $attachUsersArr,
                 $omszpz,
@@ -446,13 +483,6 @@ class MessageController extends Controller
 
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
-
-            // Период
-            $pId = periodFromStr($msg->subject);
-            if ($pId > 0) {
-                $msg->period_id = $pId;
-                $msg->save();
-            }
         }
         // Для РЕЕСТРОВ
         if ($request->type == 'reg') {
