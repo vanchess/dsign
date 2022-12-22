@@ -21,85 +21,6 @@ use App\Jobs\CheckMessageStatus;
 use Validator;
 use Illuminate\Validation\Rule;
 
-function periodFromStr(string $s): int
-{
-    // 2022
-    if (mb_strripos( $s, '12.2022')>-1) {
-        return 27;
-    }
-    if (mb_strripos( $s, '11.2022')>-1) {
-        return 26;
-    }
-    if (mb_strripos( $s, '10.2022')>-1) {
-        return 25;
-    }
-    if (mb_strripos( $s, '09.2022')>-1) {
-        return 24;
-    }
-    if (mb_strripos( $s, '08.2022')>-1) {
-        return 23;
-    }
-    if (mb_strripos( $s, '07.2022')>-1) {
-        return 22;
-    }
-    if (mb_strripos( $s, '06.2022')>-1) {
-        return 21;
-    }
-    if (mb_strripos( $s, '05.2022')>-1) {
-        return 20;
-    }
-    if (mb_strripos( $s, '04.2022')>-1) {
-        return 19;
-    }
-    if (mb_strripos( $s, '03.2022')>-1) {
-        return 18;
-    }
-    if (mb_strripos( $s, '02.2022')>-1) {
-        return 17;
-    }
-    if (mb_strripos( $s, '01.2022')>-1) {
-        return 16;
-    }
-    // 2021
-    if (mb_strripos( $s, '01.2021')>-1) {
-        return 1;
-    }
-    if (mb_strripos( $s, '02.2021')>-1) {
-        return 2;
-    }
-    if (mb_strripos( $s, '03.2021')>-1) {
-        return 3;
-    }
-    if (mb_strripos( $s, '04.2021')>-1) {
-        return 4;
-    }
-    if (mb_strripos( $s, '05.2021')>-1) {
-        return 5;
-    }
-    if (mb_strripos( $s, '06.2021')>-1) {
-        return 9;
-    }
-    if (mb_strripos( $s, '07.2021')>-1) {
-        return 10;
-    }
-    if (mb_strripos( $s, '08.2021')>-1) {
-        return 11;
-    }
-    if (mb_strripos( $s, '09.2021')>-1) {
-        return 12;
-    }
-    if (mb_strripos( $s, '10.2021')>-1) {
-        return 13;
-    }
-    if (mb_strripos( $s, '11.2021')>-1) {
-        return 14;
-    }
-    if (mb_strripos( $s, '12.2021')>-1) {
-        return 15;
-    }
-    return -1;
-}
-
 class MessageController extends Controller
 {
     /**
@@ -197,7 +118,8 @@ class MessageController extends Controller
                     return $request->type === 'agreement-fin'
                     || $request->type === 'contract-payment-oms'
                     || $request->type === 'mek'
-                    || $request->type === 'mee';
+                    || $request->type === 'mee'
+                    || $request->type === 'reconciliation-act';
                 }),
                 'array',
                 'min:1'
@@ -324,14 +246,14 @@ class MessageController extends Controller
         }
         // Для актов сверки
         if ($request->type == 'reconciliation-act') {
-            $toUser = User::find($request->to[0]);
-            $toOrg  = $toUser->organization;
+            $orgId = $request->toOrg[0];
+            $toOrg  = Organization::find($orgId);
             $msg->organization_id = $toOrg->id;
             $msg->subject   = $msg->subject . ' ' . $toOrg->short_name;
+            $msg->period_id = $request->period;
             $msg->save();
 
             $attachUsersArr = [$msg->user_id];
-
 
             $orgUsers = $toOrg->users()->with('permissions')->get();
             // Добавляем пользователей подписывающих акты
@@ -376,13 +298,6 @@ class MessageController extends Controller
 
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
-
-            // Период
-            $pId = periodFromStr($msg->subject);
-            if ($pId > 0) {
-                $msg->period_id = $pId;
-                $msg->save();
-            }
         }
 
         // Для МЭК
@@ -390,10 +305,6 @@ class MessageController extends Controller
             $orgId = $request->toOrg[0];
             $toOrg  = Organization::find($orgId);
             $msg->organization_id = $toOrg->id;
-            $msg->subject   = $msg->subject . ' ' . $toOrg->short_name;
-            $msg->save();
-
-
             $msg->period_id = $request->period;
 
             // Для категории Капитал
@@ -458,7 +369,6 @@ class MessageController extends Controller
             $orgId = $request->toOrg[0];
             $toOrg  = Organization::find($orgId);
             $msg->organization_id = $toOrg->id;
-            $msg->subject   = $msg->subject . ' ' . $toOrg->short_name;
             $msg->save();
 
             $attachUsersArr = [$msg->user_id];
