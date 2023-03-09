@@ -18,18 +18,14 @@ class MessagePolicy
     {
         //
     }
-
+    
     /**
      * Проверяем возможность отправки сообщения пользователем
      *
-     * @return
+     * @return 
      */
     public function create(User $user, ?string $messageType)
     {
-        if($messageType === 'reg')
-        {
-            return false;
-        }
         if($messageType === NULL){
             return true;
         }
