@@ -246,7 +246,7 @@ Route::get('/', function (MessageForwardService $mfs) {
     /*
     // Перенос из МЭКов в Акты сверки
     $peo = [67, 71, 72, 73, 89];
-    $mtr = [90, 91, 92];
+    $mtr = [90, 91, 281];
     $omszpz = [85, 84, 86];
     $leadership = [11, 88];
     $accountant = [134];

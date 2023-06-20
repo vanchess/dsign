@@ -41,6 +41,8 @@ class MessageController extends Controller
             'period.*'    => 'integer|distinct|exists:App\Models\Period,id',
             'org' => 'array',
             'org.*'    => 'integer|distinct|exists:App\Models\Organization,id',
+            'category' => 'array',
+            'category.*' => 'integer|distinct|exists:App\Model\MessageCategory,id'
         ]);
 
         if($validator->fails()){
@@ -81,13 +83,19 @@ class MessageController extends Controller
         if (!empty($request->period)) {
             $sql = $sql->whereIn('period_id',$request->period);
         }
+        // Категории
+        if (!empty($request->category)) {
+            $sql = $sql->whereHas('category', function ($query) use ($request) {
+                $query->whereIn('tbl_msg_category.id', $request->category);
+            });
+        }
         // Добавляем вложенные сущности User(от кого, кому), Category
-        //$sql = $sql->with(['to:id,name','from:id,name','category','status'])->OrderBy('created_at', 'desc');
         $withRelations = ['to:id,name','from:id,name','category','status'];
         if ($msgIsIncoming) {
             $withRelations = ['from:id,name','category','status'];
         }
         $sql = $sql->with($withRelations)->OrderBy('created_at', 'desc');
+       // return $sql->toSql();
         if($perPage == -1) {
             $result = $sql->paginate(999999999);
             return new MessageCollection($result);
@@ -178,10 +186,10 @@ class MessageController extends Controller
         // 85 - Березовская
         // 84 - Колташова
         // 86 - Шабалина
-        // 92 - Завьялова
+        // 281 - Сукманова
         $fin = [160, 161];
         $peo = [67, 71, 72, 73, 89];
-        $mtr = [90, 91, 92];
+        $mtr = [90, 91, 281];
         $buch = [134, 171];
         $omszpz = [85, 84, 86];
         $leadership = [11, 88];
