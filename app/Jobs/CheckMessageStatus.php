@@ -19,14 +19,14 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
 
     public $timeout = 30;
     public $tries = 1;
-    
+
     public function uniqueId()
     {
         return $this->msg->id;
     }
 
     protected $msg;
-    
+
     /**
      * Create a new job instance.
      *
@@ -45,16 +45,16 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
     public function handle()
     {
         $msg = $this->msg;
-        
+
         $statusReady = MessageStatus::where('name','ready')->firstOrFail();
         $statusRejected = MessageStatus::where('name','rejected')->firstOrFail();
         if (
-            $msg->status_id === $statusReady->id || 
+            $msg->status_id === $statusReady->id ||
             $msg->status_id === $statusRejected->id
         ) {
             return;
         }
-        
+
         $statusNoFiles = MessageStatus::where('name','no_files')->firstOrFail();
         $files = $msg->files()->with(['signUsers'])->get();
         if ($files->count() == 0) {
@@ -62,25 +62,25 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
             $msg->save();
             return;
         }
-        
+
         $statusSent = MessageStatus::where('name','sent')->firstOrFail();
         $statusSignedBySpecialist = MessageStatus::where('name','signed_by_specialist')->firstOrFail();
         $statusSignedByHead = MessageStatus::where('name','signed_by_head')->firstOrFail();
         $statusSigning = MessageStatus::where('name','signing')->firstOrFail();
         $statusSignedMo = MessageStatus::where('name','signed_mo')->firstOrFail();
-        
+
         if ($msg->type->name === 'mek') {
             $specialist = true;
             $head = true;
             $mo = true;
-            
+
             foreach ($files as $f) {
                 $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
-                
-                $specialist = $specialist 
-                    && ($signUsers->contains('id', 89) || $signUsers->contains('id', 90));
+
+                $specialist = $specialist
+                    && ($signUsers->contains('id', 71) || $signUsers->contains('id', 90));
                 $head = $head && ($signUsers->contains('id', 11) || $signUsers->contains('id', 88));
-                
+
                 $tempMo = false;
                 foreach ($signUsers as $u) {
                     if ($u->hasPermissionTo('sign-mo-lider mek')) {
@@ -89,8 +89,8 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
                 }
                 $mo = $mo && $tempMo;
             }
-            
-            
+
+
             if ($msg->status_id === $statusSent->id) {
                 // Проверяем есть ли подпись специалиста
                 if ($specialist) {
@@ -111,19 +111,19 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
             }
             $msg->save();
         }
-        
+
         if ($msg->type->name === 'mee') {
             $tfSpecialist = true;
             $tfHead = true;
             $moHead = true;
-            
+
             foreach ($files as $f) {
                 $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
-                
+
                 $tempTfSpecialist = false;
                 $tempTfHead = false;
                 $tempMoHead = false;
-                
+
                 foreach ($signUsers as $u) {
                     if ($u->hasPermissionTo('sign-specialist mee')) {
                         $tempTfSpecialist = true;
@@ -135,13 +135,13 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
                         $tempMoHead = true;
                     }
                 }
-                
+
                 $tfSpecialist = $tfSpecialist && $tempTfSpecialist;
                 $tfHead = $tfHead && $tempTfHead;
                 $moHead = $moHead && $tempMoHead;
             }
-            
-            
+
+
             if ($msg->status_id === $statusSent->id) {
                 // Проверяем есть ли подпись специалиста
                 if ($tfSpecialist) {
@@ -162,17 +162,17 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
             }
             $msg->save();
         }
-        
+
         if ($msg->type->name === 'reconciliation-act') {
             $tfSpecialist = true;
             $tfHead = true;
             $tfAccountant = true;
             $moHead = true;
             $moAccountant = true;
-            
+
             foreach ($files as $f) {
                 $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
-                
+
                 $tempTfSpecialist = false;
                 $tempTfHead = false;
                 $tempTfAccountant = false;
@@ -226,14 +226,14 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
             }
             $msg->save();
         }
-        
+
         if ($msg->type->name === 'bill') {
             $accountant = true;
             $mo = true;
-            
+
             foreach ($files as $f) {
                 $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
-                
+
                 $tempMo = false;
                 $tempAccountant = false;
                 foreach ($signUsers as $u) {
@@ -261,28 +261,28 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
                 }
             }
             $msg->save();
-            
+
         }
-        
+
         if ($msg->type->name === 'reg') {
             $statusRejectedFlc = MessageStatus::where('name','rejected_flc')->firstOrFail();
             $statusLoaded = MessageStatus::where('name','loaded')->firstOrFail();
             $statusInProgress = MessageStatus::where('name','in_progress')->firstOrFail();
-            
+
             if (
-                $msg->status_id === $statusRejectedFlc->id 
+                $msg->status_id === $statusRejectedFlc->id
                 || $msg->status_id === $statusLoaded->id
                 || $msg->status_id === $statusInProgress->id
             ) {
                 return;
             }
-            
+
             $accountant = true;
             $mo = true;
-            
+
             foreach ($files as $f) {
                 $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
-                
+
                 $tempMo = false;
                 $tempAccountant = false;
                 foreach ($signUsers as $u) {
@@ -305,17 +305,17 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
                 $msg->status_id = $statusSignedMo->id;
             }
             $msg->save();
-            
+
         }
-        
+
         if ($msg->type->name === 'agreement-fin') {
-            
+
             $tf = true;
             $mo = true;
-            
+
             foreach ($files as $f) {
                 $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
-                
+
                 $tempTf = false;
                 $tempMo = false;
                 foreach ($signUsers as $u) {
@@ -339,18 +339,18 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
                 $msg->status_id = $statusReady->id;
             }
             $msg->save();
-            
+
         }
-        
+
         if ($msg->type->name === 'agreement-fin-salaries') {
-            
+
             $tf = true;
             $mo = true;
             $dzo = true;
-            
+
             foreach ($files as $f) {
                 $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
-                
+
                 $tempTf = false;
                 $tempMo = false;
                 $tampDzo = false;
@@ -379,12 +379,12 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
                 $msg->status_id = $statusReady->id;
             }
             $msg->save();
-            
+
         }
         /**/
         if ($msg->type->name === 'contract-payment-oms') {
             $smoCount = 2;
-            
+
             $tf = true;
             $mo = true;
             $smo = true;
@@ -393,15 +393,15 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
                 $s[i] = true;
             }
             */
-            
+
             foreach ($files as $f) {
                 $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
-                
+
                 $tempTf = false;
                 $tempMo = false;
-                
+
                 $smoSigned = [];
-                
+
                 foreach ($signUsers as $u) {
                     if ($u->hasPermissionTo('sign-mo-lider contract-payment-oms')) {
                         $tempMo = true;
@@ -432,18 +432,18 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
             if ($tf && $mo && $smo) {
                 $msg->status_id = $statusReady->id;
             }
-            
-            $msg->save();   
+
+            $msg->save();
         }
-        
+
         if ($msg->type->name === 'contract-financial-support-oms') {
-            
+
             $tf = true;
             $smo = true;
-            
+
             foreach ($files as $f) {
                 $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
-                
+
                 $tempTf = false;
                 $tempSmo = false;
                 foreach ($signUsers as $u) {
@@ -469,7 +469,7 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
                 $msg->status_id = $statusReady->id;
             }
             $msg->save();
-            
+
         }
     }
 }
