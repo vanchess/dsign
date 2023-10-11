@@ -53,8 +53,8 @@ class MessageForwardService {
      *
      *
      */
-    /*
-    function forwardInMsg(int $msgRecipientId, array $attachToUsersIdArr, array $msgTypeIdArr, \DateTime $fromDateTime, \DateTime $toDateTime)
+    /**/
+    function forwardInMessages(int $msgRecipientId, array $attachToUsersIdArr, array $msgTypeIdArr, \DateTime $fromDateTime, \DateTime $toDateTime)
     {
         $user = User::find($msgRecipientId);
         $msgIds = $user->incomingMessages()
@@ -68,5 +68,5 @@ class MessageForwardService {
             $user->incomingMessages()->syncWithoutDetaching($msgIds);
         }
     }
-    */
+
 }
