@@ -207,6 +207,9 @@ class MessageController extends Controller
                 Временное решение.
                 Все письма в разделе почта отправленные одному из абонентов отдела ПЭО
                 дублируются для всего отдела (все сотрудники отдела добавляются в получатели)
+
+                2. Все письма в разделе почта отправленные директору(11)
+                дублируются для Кобзарь(88)
             */
             $attachUsersArr = [];
             foreach ($request->to as $toUser) {
@@ -214,6 +217,16 @@ class MessageController extends Controller
                     $attachUsersArr = array_merge(
                         $attachUsersArr,
                         $peo
+                    );
+                    break;
+                }
+
+            }
+            foreach ($request->to as $toUser) {
+                if ((int)$toUser === 11) {
+                    $attachUsersArr = array_merge(
+                        $attachUsersArr,
+                        [88]
                     );
                     break;
                 }
