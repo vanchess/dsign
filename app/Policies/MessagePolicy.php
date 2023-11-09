@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Auth\Access\Response;
 
 class MessagePolicy
 {
@@ -18,16 +19,19 @@ class MessagePolicy
     {
         //
     }
-    
+
     /**
      * Проверяем возможность отправки сообщения пользователем
      *
-     * @return 
+     * @return
      */
     public function create(User $user, ?string $messageType)
     {
         if($messageType === NULL){
             return true;
+        }
+        if($messageType === 'reg'){
+            return Response::deny('Прием реестров закрыт');
         }
         if($user->hasPermissionTo('send '.$messageType)){
             return true;
