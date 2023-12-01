@@ -30,9 +30,11 @@ class MessagePolicy
         if($messageType === NULL){
             return true;
         }
+        /*
         if($messageType === 'reg'){
             return Response::deny('Прием реестров закрыт');
         }
+        */
         if($user->hasPermissionTo('send '.$messageType)){
             return true;
         }
