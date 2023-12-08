@@ -30,13 +30,13 @@ class MessagePolicy
         if($messageType === NULL){
             return true;
         }
-        /*
-        if($messageType === 'reg'){
-            if (time() > strtotime('2023-12-07 19:00')) {
+        /**/
+        if($messageType === 'reg') {
+            if (time() > strtotime('2023-12-11 3:00')) {
                 return Response::deny('Прием реестров закрыт');
             }
         }
-*/
+
         if($user->hasPermissionTo('send '.$messageType)){
             return true;
         }
