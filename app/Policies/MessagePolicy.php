@@ -32,7 +32,7 @@ class MessagePolicy
         }
         /**/
         if($messageType === 'reg') {
-            if (time() > strtotime('2023-12-11 3:00')) {
+            if (time() < strtotime('2023-12-21 3:00')) {
                 return Response::deny('Прием реестров закрыт');
             }
         }
