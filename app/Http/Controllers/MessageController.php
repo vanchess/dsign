@@ -203,6 +203,14 @@ class MessageController extends Controller
         $dzo = [196];
         // Для писем "почта" (тип не указан)
         if (!$request->type) {
+            $attachUsersArr = [];
+            // Все письма в разделе почта дублируются на приемную
+            $receiveAllMailUsersIds = User::permission('receive all-mail-notype')->get()->pluck('id')->toArray();
+
+            $attachUsersArr = array_merge(
+                $attachUsersArr,
+                $receiveAllMailUsersIds
+            );
             /* TODO:
                 Временное решение.
                 Все письма в разделе почта отправленные одному из абонентов отдела ПЭО
@@ -211,7 +219,6 @@ class MessageController extends Controller
                 2. Все письма в разделе почта отправленные директору(11)
                 дублируются для Кобзарь(88)
             */
-            $attachUsersArr = [];
             foreach ($request->to as $toUser) {
                 if (in_array($toUser, $peo)) {
                     $attachUsersArr = array_merge(
