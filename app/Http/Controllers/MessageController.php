@@ -183,15 +183,12 @@ class MessageController extends Controller
         // 89 - Симонова
         // 90 - Бурсина
         // 91 - Хохлачева
-        // 85 - Березовская
-        // 84 - Колташова
-        // 86 - Шабалина
         // 281 - Сукманова
         $fin = [160, 161];
         $peo = [67, 71, 72, 73, 89];
         $mtr = [90, 91, 281];
         $buch = [134, 171];
-        $omszpz = User::role('omszpz')->get()->pluck('id')->toArray(); //[85, 84, 86];
+        $omszpz = User::role('omszpz')->get()->pluck('id')->toArray();
         $leadership = [11, 88];
         $myagkaya = [193];
         $accountant = [134];
@@ -204,13 +201,22 @@ class MessageController extends Controller
         // Для писем "почта" (тип не указан)
         if (!$request->type) {
             $attachUsersArr = [];
-            // Все письма в разделе почта дублируются на приемную
-            $receiveAllMailUsersIds = User::permission('receive all-mail-notype')->get()->pluck('id')->toArray();
-
-            $attachUsersArr = array_merge(
-                $attachUsersArr,
-                $receiveAllMailUsersIds
-            );
+            // Все письма для ТФОМС в разделе почта дублируются на приемную
+            // (Кроме писем отправленных сотрудниками ТФОМС)
+            if (!$user->hasRole('tfoms'))
+            {
+                $tfoms = User::role('tfoms')->get()->pluck('id')->toArray();
+                $receiveAllMailUsersIds = User::permission('receive all-mail-notype')->get()->pluck('id')->toArray();
+                foreach ($request->to as $toUser) {
+                    if (in_array($toUser, $tfoms)) {
+                        $attachUsersArr = array_merge(
+                            $attachUsersArr,
+                            $receiveAllMailUsersIds
+                        );
+                        break;
+                    }
+                }
+            }
             /* TODO:
                 Временное решение.
                 Все письма в разделе почта отправленные одному из абонентов отдела ПЭО
