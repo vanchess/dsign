@@ -191,7 +191,7 @@ class MessageController extends Controller
         $peo = [67, 71, 72, 73, 89];
         $mtr = [90, 91, 281];
         $buch = [134, 171];
-        $omszpz = [85, 84, 86];
+        $omszpz = User::role('omszpz')->get()->pluck('id')->toArray(); //[85, 84, 86];
         $leadership = [11, 88];
         $myagkaya = [193];
         $accountant = [134];
@@ -424,8 +424,15 @@ class MessageController extends Controller
         }
         // Для РЕЕСТРОВ
         if ($request->type == 'reg') {
-            // 152 - AIS
-            $attachUsersArr = [$msg->user_id, 152];
+            $attachUsersArr = [$msg->user_id];
+            // Пересылаем все реестры на AIS
+            $receiveAllRegUsersIds = User::permission('receive all-reg')->get()->pluck('id')->toArray();
+
+            $attachUsersArr = array_merge(
+                $attachUsersArr,
+                $receiveAllRegUsersIds
+            );
+
             $org  = $user->organization;
             $msg->organization_id = $org->id;
             $msg->period_id = $request->period;
