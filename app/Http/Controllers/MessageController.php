@@ -190,7 +190,7 @@ class MessageController extends Controller
         $buch = [134, 171];
         $omszpz = User::role('omszpz')->get()->pluck('id')->toArray();
         $leadership = [11, 88];
-        $myagkaya = [193];
+        $myagkaya = [305];
         $accountant = [134];
         $lawyers = [189,190]; // Юристы
         // Страховые
