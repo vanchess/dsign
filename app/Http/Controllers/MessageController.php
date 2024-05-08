@@ -34,7 +34,7 @@ class MessageController extends Controller
 
         $validator = Validator::make($request->all(), [
             'type'      => 'array',
-            'type.*'    => 'string|in:notype,bill,mek,mee,reconciliation-act,reg,agreement-fin,contract-payment-oms,contract-financial-support-oms,agreement-fin-salaries|distinct|exists:App\Models\MessageType,name',
+            'type.*'    => 'string|in:notype,bill,mek,mee,reconciliation-act,reg,agreement-fin,contract-payment-oms,contract-financial-support-oms,agreement-fin-salaries,displist|distinct|exists:App\Models\MessageType,name',
             'status'   => 'array',
             'status.*'    => 'string|distinct|exists:App\Models\MessageStatus,name',
             'period'   => 'array',
@@ -561,6 +561,35 @@ class MessageController extends Controller
             }
             // Для ЮР отдела, Руководства
             $attachUsersArr = array_merge($attachUsersArr,$lawyers,$leadership);
+
+            $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
+            $msg->to()->syncWithoutDetaching($attachUsersArr);
+        }
+        // Для Списков сотрудников на проф.мероприятия
+        if ($request->type == 'displist') {
+            $attachUsersArr = [$msg->user_id];
+            // Пересылаем
+            $receiveAllDispListUsersIds = User::permission('receive all-displist')->get()->pluck('id')->toArray();
+
+            $attachUsersArr = array_merge(
+                $attachUsersArr,
+                $receiveAllDispListUsersIds
+            );
+
+            $org  = $user->organization;
+            $msg->organization_id = $org->id;
+            $msg->period_id = $request->period;
+            $msg->save();
+            $orgUsers = $org->users()->with('permissions')->get();
+            // Добавляем пользователей
+            foreach ($orgUsers as $u) {
+                if (
+                    $u->hasPermissionTo('receive mo-displist')
+                    || $u->hasPermissionTo('sign-mo-lider displist')
+                ) {
+                    $attachUsersArr[] = $u->id;
+                }
+            }
 
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
