@@ -69,10 +69,13 @@ class Displist extends Migration
 
         Schema::create('tbl_displist_entry', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->increments('order');
+            $table->dropPrimary();
+            $table->foreignId('displist_id');
             $table->string('first_name', 128);
             $table->string('middle_name', 128)->nullable();
             $table->string('last_name', 128);
-            $table->timestamp('birthday');
+            $table->date('birthday');
             $table->string('enp', 16);
             $table->string('snils', 11);
 
@@ -89,15 +92,14 @@ class Displist extends Migration
                    ->onDelete('restrict');
             $table->string('status_text', 256)->nullable();
             $table->foreignId('user_id');
-            $table->foreignId('organization_id');
             $table->timestamps();
             $table->softDeletes();
 
             $table->foreign('preventive_medical_measure_id')->references('id')->on('tbl_preventive_medical_measure_types')->onUpdate('cascade')->onDelete('restrict');
             $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('restrict');
-            $table->foreign('organization_id')->references('id')->on('tbl_organization')->onUpdate('cascade')->onDelete('restrict');
             $table->foreign('mo_id')->references('id')->on('tbl_mo')->onUpdate('cascade')->onDelete('restrict');
             $table->foreign('smo_id')->references('id')->on('tbl_smo')->onUpdate('cascade')->onDelete('restrict');
+            $table->foreign('displist_id')->references('id')->on('tbl_displist')->onUpdate('cascade')->onDelete('restrict');
         });
     }
 
@@ -113,6 +115,6 @@ class Displist extends Migration
         Schema::dropIfExists('tbl_displist_status');
         Schema::dropIfExists('tbl_smo');
         Schema::dropIfExists('tbl_mo');
-        Schema::dropIfExists('tbl_preventive_medical_measures');
+        Schema::dropIfExists('tbl_preventive_medical_measure_types');
     }
 }

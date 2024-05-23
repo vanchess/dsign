@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DispListEntriesController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\FileUpload;
 use App\Http\Controllers\MessageStatusController;
@@ -15,8 +16,10 @@ use App\Http\Controllers\MessageHasStatusController;
 use App\Http\Controllers\FileFileSignController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\InviteController;
+use App\Http\Controllers\MessageDispListsController;
 use App\Http\Controllers\PeriodController;
 use App\Http\Controllers\PDController;
+use App\Http\Controllers\PreventiveMedicalMeasureTypeController;
 use App\Http\Controllers\UserRoleController;
 
 /*
@@ -54,11 +57,14 @@ Route::group(array('prefix' => 'v1'), function()
             'users' => UserController::class,
             'period' => PeriodController::class,
             //'file-signs' => FileSignController::class,
+            'preventive-medical-measure' => PreventiveMedicalMeasureTypeController::class
         ]);
         Route::apiResource('msg.to-users', MessageToUsersController::class);
         Route::apiResource('msg.files', MessageFilesController::class);
         Route::apiResource('msg.status', MessageHasStatusController::class)->only(['index', 'store']);
+        Route::apiResource('msg.displists', MessageDispListsController::class)->only(['index']);
         Route::apiResource('file.sign', FileFileSignController::class);
+        Route::apiResource('displist.entries', DispListEntriesController::class)->only(['index', 'store', 'update', 'destroy']);
 
     });
 

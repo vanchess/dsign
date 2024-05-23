@@ -17,7 +17,7 @@ use App\Models\User;
 use App\Models\Organization;
 
 use App\Jobs\CheckMessageStatus;
-
+use App\Models\DispList;
 use Validator;
 use Illuminate\Validation\Rule;
 
@@ -567,6 +567,9 @@ class MessageController extends Controller
         }
         // Для Списков сотрудников на проф.мероприятия
         if ($request->type == 'displist') {
+            $dl = new DispList();
+            $dl->msg_id = $msg->id;
+            $dl->save();
             $attachUsersArr = [$msg->user_id];
             // Пересылаем
             $receiveAllDispListUsersIds = User::permission('receive all-displist')->get()->pluck('id')->toArray();
