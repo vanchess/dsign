@@ -17,4 +17,9 @@ class DispList extends Model
     {
         return $this->hasMany(DispListEntry::class, 'displist_id', 'id');
     }
+
+    public function message()
+    {
+        return $this->belongsTo(Message::class, 'msg_id', 'id');
+    }
 }

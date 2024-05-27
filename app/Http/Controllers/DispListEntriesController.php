@@ -6,11 +6,9 @@ use App\Http\Resources\DispListEntryCollection;
 use App\Http\Resources\DispListEntryResource;
 use App\Models\DispList;
 use App\Models\DispListEntry;
-use App\Models\PreventiveMedicalMeasureTypes;
 use Illuminate\Validation\Factory as Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 
 class DispListEntriesController extends Controller
 {
@@ -21,6 +19,7 @@ class DispListEntriesController extends Controller
      */
     public function index(DispList $displist)
     {
+        $this->authorize('view', [DispListEntry::class, null, $displist]);
         return new DispListEntryCollection($displist->entries()->orderBy('order')->get());
     }
 
@@ -32,6 +31,8 @@ class DispListEntriesController extends Controller
      */
     public function store(Validator $v, DispList $displist, Request $request)
     {
+        $this->authorize('create', [DispListEntry::class, $displist]);
+
         $validator = $v->make($request->all(), [
             'id' => 'required|uuid',
             'first_name' => 'required|string|min:1|max:128|not_regex:/[^а-яё \-]/iu',
@@ -41,7 +42,7 @@ class DispListEntriesController extends Controller
             'enp' => 'required|string|size:16',
             'snils' => 'required|string|size:11',
             'preventive_medical_measure_id' => [
-                'required','integer',
+                'required','integer','min:1'
             ],
             'description' => 'nullable|string|min:1|max:256',
             'contact_info' => 'nullable|string|min:1|max:256',
@@ -93,12 +94,13 @@ class DispListEntriesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Validator $v, int $displistId, DispListEntry $entry)
+    public function update(Request $request, Validator $v, DispList $displist, DispListEntry $entry)
     {
-        if ($entry->displist_id !== $displistId)
+        if ($entry->displist_id !== $displist->id)
         {
             return response()->json(['error' => 'Forbidden'], 403);
         }
+        $this->authorize('update', [$entry, $displist]);
 
         $validator = $v->make($request->all(), [
             'first_name' => 'required|string|min:1|max:128|not_regex:/[^а-яё \-]/iu',
@@ -108,7 +110,7 @@ class DispListEntriesController extends Controller
             'enp' => 'required|string|size:16',
             'snils' => 'required|string|size:11',
             'preventive_medical_measure_id' => [
-                'required','integer',
+                'required','integer','min:1'
             ],
             'description' => 'nullable|string|min:1|max:256',
             'contact_info' => 'nullable|string|min:1|max:256',
@@ -137,8 +139,8 @@ class DispListEntriesController extends Controller
         $entry->enp =  $validated['enp'];
         $entry->snils =  $validated['snils'];
         $entry->preventive_medical_measure_id =  $validated['preventive_medical_measure_id'];
-        $entry->description =  $validated['description'];
-        $entry->contact_info =  $validated['contact_info'];
+        $entry->description =  $validated['description'] ?? null;
+        $entry->contact_info =  $validated['contact_info'] ?? null;
         $entry->save();
         return new DispListEntryResource($entry);
     }
@@ -149,12 +151,14 @@ class DispListEntriesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(int $displistId, DispListEntry $entry)
+    public function destroy(DispList $displist, DispListEntry $entry)
     {
-        if ($entry->displist_id !== $displistId)
+        if ($entry->displist_id !== $displist->id)
         {
             return response()->json(['error' => 'Forbidden'], 403);
         }
+        $this->authorize('delete', [$entry, $displist]);
+
         return $entry->delete();
     }
 }

@@ -2,8 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\DispListEntry;
 use App\Models\File;
+use App\Models\Message;
 use App\Models\User;
+use App\Policies\DispListEntriesPolicy;
 use App\Policies\FilePolicy;
 use App\Policies\MessagePolicy;
 use App\Policies\UserPolicy;
@@ -22,6 +25,7 @@ class AuthServiceProvider extends ServiceProvider
         File::class => FilePolicy::class,
         Message::class => MessagePolicy::class,
         User::class => UserPolicy::class,
+        DispListEntry::class => DispListEntriesPolicy::class
     ];
 
     /**
