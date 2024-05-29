@@ -16,6 +16,7 @@ use App\Http\Controllers\MessageHasStatusController;
 use App\Http\Controllers\FileFileSignController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\InviteController;
+use App\Http\Controllers\MedicalInstitutionController;
 use App\Http\Controllers\MessageDispListsController;
 use App\Http\Controllers\PeriodController;
 use App\Http\Controllers\PDController;
@@ -57,7 +58,8 @@ Route::group(array('prefix' => 'v1'), function()
             'users' => UserController::class,
             'period' => PeriodController::class,
             //'file-signs' => FileSignController::class,
-            'preventive-medical-measure' => PreventiveMedicalMeasureTypeController::class
+            'preventive-medical-measure' => PreventiveMedicalMeasureTypeController::class,
+            'mo' => MedicalInstitutionController::class
         ]);
         Route::apiResource('msg.to-users', MessageToUsersController::class);
         Route::apiResource('msg.files', MessageFilesController::class);
