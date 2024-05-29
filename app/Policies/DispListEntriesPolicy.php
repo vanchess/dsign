@@ -58,7 +58,11 @@ class DispListEntriesPolicy
      */
     public function update(User $user, ?DispListEntry $entry, ?DispList $displist)
     {
-        if ($displist->message->organization->id !== $user->organization->id) {
+        $msg = $displist->message;
+        if ($msg->organization->id !== $user->organization->id) {
+            return false;
+        }
+        if ($msg->status->name !== 'draft') {
             return false;
         }
 

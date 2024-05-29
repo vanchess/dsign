@@ -62,7 +62,7 @@ class MessageController extends Controller
             $statuses = MessageStatus::whereIn('name',$request->status)->pluck('id');
         } else {
             // по умолчанию
-            $defaultStatuses = ['sent','signed_by_specialist','signed_by_head','ready','no_files','signed_mo','signing','rejected_flc','in_progress','loaded','sent-to-smo'];
+            $defaultStatuses = ['draft','sent','signed_by_specialist','signed_by_head','ready','no_files','signed_mo','signing','rejected_flc','in_progress','loaded','sent-to-smo'];
             $statuses = MessageStatus::whereIn('name',$defaultStatuses)->pluck('id');
         }
         $sql = $sql->whereIn('status_id',$statuses);
@@ -580,6 +580,7 @@ class MessageController extends Controller
             );
 
             $org  = $user->organization;
+            $msg->status_id = 1; // черновик
             $msg->organization_id = $org->id;
             $msg->period_id = $request->period;
             $msg->save();

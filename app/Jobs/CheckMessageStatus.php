@@ -46,11 +46,13 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
     {
         $msg = $this->msg;
 
+        $statusDraft = MessageStatus::where('name','draft')->firstOrFail();
         $statusReady = MessageStatus::where('name','ready')->firstOrFail();
         $statusRejected = MessageStatus::where('name','rejected')->firstOrFail();
         if (
             $msg->status_id === $statusReady->id ||
-            $msg->status_id === $statusRejected->id
+            $msg->status_id === $statusRejected->id ||
+            $msg->status_id === $statusDraft->id
         ) {
             return;
         }
