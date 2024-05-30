@@ -110,7 +110,7 @@ class MessageHasStatusController extends Controller
                 // TODO: Вынести функционал изменения пользователем
                 // статуса сообщения в отдельный сервис
 
-                UserChangedMessageStatus::dispatch($msg->id, $request->status, $user->id);
+                UserChangedMessageStatus::dispatch($msg->id, $msg->type->name, $request->status, $user->id);
 
                 return new MessageStatusResource($status);
         }

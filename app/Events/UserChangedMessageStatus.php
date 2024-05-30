@@ -15,18 +15,22 @@ class UserChangedMessageStatus
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    public $msgId;
+    public $msgType;
+    public $statusName;
+    public $userId;
+
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(
-        public int $msgId,
-        public string $statusName,
-        public int $userId
-    )
+    public function __construct(int $msgId, string $msgType, string $statusName, int $userId)
     {
-        //
+        $this->msgId = $msgId;
+        $this->statusName = $statusName;
+        $this->userId = $userId;
+        $this->msgType = $msgType;
     }
 
     /**
