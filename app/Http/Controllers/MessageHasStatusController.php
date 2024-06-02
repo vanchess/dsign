@@ -101,6 +101,7 @@ class MessageHasStatusController extends Controller
 
         if($request->status == 'sent' &&
            $msg->type->name == 'displist' &&
+           $msg->status->name == 'draft' &&
            $user->hasPermissionTo('send displist')
         ){
                 $status = MessageStatus::where('name',$request->status)->firstOrFail();

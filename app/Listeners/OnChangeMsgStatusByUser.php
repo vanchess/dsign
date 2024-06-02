@@ -36,14 +36,20 @@ class OnChangeMsgStatusByUser implements ShouldQueue
     {
         if ($event->msgType == 'displist' || $event->statusName == 'sent') {
             $stampParam = [
-                'listW' => 595,
-                'listH' => 842,
+                'listW' => 842,
+                'listH' => 595,
                 'fontName' => '/CourierC.otf',
-                'color' => '0 0 1',
-                'fontSize' => 10
+                'color' => '0 0 0',
+                'fontSize' => 10,
+                'perPage' => 47
             ];
 
-            $this->pdfService->сreateFileIdStampPdf('outFile1234567890.pdf', $stampParam);
+            $lines = [];
+            for ($i = 0; $i < 420; $i++) {
+                $lines[] = '5555555555555555	04109551121	1';
+            }
+
+            $this->pdfService->createDocument('outFile1234567890.pdf', $lines, $stampParam);
         }
     }
 }

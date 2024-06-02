@@ -26,7 +26,7 @@ class CreateSignStamp implements ShouldQueue, ShouldBeUnique
 
     public $timeout = 60;
     public $tries = 2;
-    
+
     public function uniqueId()
     {
         return $this->file->id;
@@ -34,7 +34,7 @@ class CreateSignStamp implements ShouldQueue, ShouldBeUnique
 
     protected $file;
     private const DOC_EXT = 'odt,ods,odp,csv,txt,xlx,xls,pdf,doc,docx,xlsx,xml,ppt';
-    
+
     /**
      * Create a new job instance.
      *
@@ -50,7 +50,7 @@ class CreateSignStamp implements ShouldQueue, ShouldBeUnique
         // mb_convert_encoding($text, 'windows-1251', 'utf-8');
         $f = 'UTF-8//IGNORE';
         $t = 'WINDOWS-1251//IGNORE';
-        
+
         return '<'.\bin2hex(\iconv($f, $t, $str)).'>';
     }
 
@@ -63,7 +63,7 @@ class CreateSignStamp implements ShouldQueue, ShouldBeUnique
         $_w = -$w;
         return "{$x} {$y} moveto {$w} 0 rlineto 0 {$_h} rlineto {$_w} 0 rlineto 0 {$h} rlineto stroke";
     }
-    
+
     protected function setFont($name, $size = 10) {
         return "{$name} findfont {$size} scalefont setfont";
     }
@@ -79,11 +79,11 @@ class CreateSignStamp implements ShouldQueue, ShouldBeUnique
      */
     protected function toPdf($outdir, $fileName) {
         $process = new Process(['libreoffice', '--convert-to', 'pdf', '--outdir', Storage::path($outdir), Storage::path($fileName)]);
-        
+
         // throw new \Exception($process->getCommandLine());
         //$process->setTimeout(3600);
         $process->run();
-        
+
         if (!$process->isSuccessful()) {
             throw new ProcessFailedException($process);
         }
@@ -94,7 +94,7 @@ class CreateSignStamp implements ShouldQueue, ShouldBeUnique
      *
      *
      */
-    protected function сreateFileSignInfoPdf($outfile, $stampParam) {
+    protected function createFileSignInfoPdf($outfile, $stampParam) {
         $listW = $stampParam['listW'];
         $listH = $stampParam['listH'];
         $fontName = $stampParam['fontName'];
@@ -132,7 +132,7 @@ class CreateSignStamp implements ShouldQueue, ShouldBeUnique
             array_merge([
                 'gs','-o',Storage::path($outfile),'-sDEVICE=pdfwrite',
                 '-g'.$listW.'0x'.$listH.'0',
-                '-c', 
+                '-c',
                 $this->setRgbColor($color),
                 $this->drawStampFrame($stampX, $stampY, $stampW, $stampH),
                 $this->setFont($fontName, $fontSize),
@@ -144,7 +144,7 @@ class CreateSignStamp implements ShouldQueue, ShouldBeUnique
             ]
             )
         );
-            
+
         $processCreateStamp->run();
 
 
@@ -158,7 +158,7 @@ class CreateSignStamp implements ShouldQueue, ShouldBeUnique
      *
      *
      */
-    protected function сreateFileIdStampPdf($outfile, $stampParam) {        
+    protected function createFileIdStampPdf($outfile, $stampParam) {
         $processCreateSmallStamp = new Process(['gs',
                 '-o', Storage::path($outfile),
                 '-sDEVICE=pdfwrite',
@@ -169,14 +169,14 @@ class CreateSignStamp implements ShouldQueue, ShouldBeUnique
                 $this->fillText('Подписано ЭП. ИД оригинала документа в информационной системе ТФОМС Курганской области: '.$this->file->id, 1, 1),
                 '-c', 'showpage'
             ]);
-            
+
         $processCreateSmallStamp->run();
 
         if (!$processCreateSmallStamp->isSuccessful()) {
             throw new ProcessFailedException($processCreateSmallStamp);
         }
     }
-    
+
     /**
      * Добавить штамп на каждую страницу документа
      *
@@ -195,7 +195,7 @@ class CreateSignStamp implements ShouldQueue, ShouldBeUnique
             throw new ProcessFailedException($processPdftkMultistamp);
         }
     }
-    
+
     /**
      * Объединить несколько файлов PDF в один
      *
@@ -235,15 +235,15 @@ class CreateSignStamp implements ShouldQueue, ShouldBeUnique
                     'cat','output',Storage::path($outfile)
                 ],
             ));
-            
+
             $processMergePdfFile->run();
-            
+
             if (!$processMergePdfFile->isSuccessful()) {
                 throw new ProcessFailedException($processMergePdfFile);
             }
         }
     }
-    
+
     /**
      * Execute the job.
      *
@@ -257,10 +257,10 @@ class CreateSignStamp implements ShouldQueue, ShouldBeUnique
             'type_id' => $type_id,
             'user_id' => null
         ]);
-        
+
         $filename  = pathinfo($this->file->file_path, PATHINFO_FILENAME);
         $extension = strtolower(pathinfo($this->file->file_path, PATHINFO_EXTENSION));
-        
+
         $validator = Validator::make([
               'extension' => $extension,
           ],
@@ -271,8 +271,8 @@ class CreateSignStamp implements ShouldQueue, ShouldBeUnique
         if($validator->fails()){
             return;
         }
-        
-        if(empty($fileSignStamp->pdf_file_path) || 
+
+        if(empty($fileSignStamp->pdf_file_path) ||
             !Storage::exists($fileSignStamp->pdf_file_path)){
             if($extension === 'pdf')
             {
@@ -301,36 +301,36 @@ class CreateSignStamp implements ShouldQueue, ShouldBeUnique
             'fontSize' => 10
         ];
         $stampPageFileName = 'CertStamps/'.$filename.'.pdf';
-        $this->сreateFileSignInfoPdf($stampPageFileName, $stampParam);
-        
+        $this->createFileSignInfoPdf($stampPageFileName, $stampParam);
+
         if(empty($fileSignStamp->pdf_with_id_file_path) ||
             !Storage::exists($fileSignStamp->pdf_with_id_file_path)){
             // Создаем штамп "ИД оригинала документа"
             $idStampFileName = 'CertStamps/'.$filename.'_idpA4.pdf';
-            $this->сreateFileIdStampPdf($idStampFileName, $stampParam);
+            $this->createFileIdStampPdf($idStampFileName, $stampParam);
 
             // Добавляем штамп "ИД оригинала документа" на все страницы
             $fileSignStamp->pdf_with_id_file_path = 'UserFilesStamped/'.$filename.'_id.pdf';
             $this->addMultistampPdf(
-                $fileSignStamp->pdf_with_id_file_path, 
-                $fileSignStamp->pdf_file_path, 
+                $fileSignStamp->pdf_with_id_file_path,
+                $fileSignStamp->pdf_file_path,
                 $idStampFileName
             );
-            
+
             Storage::delete($idStampFileName);
             $fileSignStamp->save();
         }
-        
+
         // Добаляем страницу штампа к документу
         $stampedFileName = 'UserFilesStamped/'.$filename.'.pdf';
-        $this->mergePdf($stampedFileName, 
+        $this->mergePdf($stampedFileName,
             [
                 $fileSignStamp->pdf_with_id_file_path,
                 $stampPageFileName
             ]
         );
         Storage::delete($stampPageFileName);
-        
+
         $fileSignStamp->stamped_file_path = $stampedFileName;
         $fileSignStamp->save();
     }
@@ -352,7 +352,7 @@ $processCreateSmallStamp = new Process(['gs',
         '-c', '0 0 0 setrgbcolor',
         '-c', '1 1 moveto',
         '-c', '318 0 rlineto 0 73 rlineto -318 0 rlineto 0 -73 rlineto',
-        '-c', 'stroke',  
+        '-c', 'stroke',
         '-c', '/CourierC.otf findfont 12 scalefont setfont',
         '-c', '50 63 moveto',
         '-c', $this->strToPdf('ДОКУМЕНТ ПОДПИСАН').' show',
@@ -370,7 +370,7 @@ $processCreateSmallStamp = new Process(['gs',
         '-c', $this->strToPdf('ID документа в системе ТФОМС Курганской области: '.$this->file->id).' show',
         '-c', 'showpage'
     ]);
-    
+
 $processCreateSmallStamp->run();
 
 // executes after the command finishes
