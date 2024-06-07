@@ -106,6 +106,7 @@ class MessageHasStatusController extends Controller
         ){
                 $status = MessageStatus::where('name',$request->status)->firstOrFail();
                 $msg->status_id = $status->id;
+                $msg->created_at = now();
                 $msg->save();
 
                 // TODO: Вынести функционал изменения пользователем
