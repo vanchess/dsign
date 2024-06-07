@@ -103,7 +103,7 @@ class MessageHasStatusController extends Controller
            $msg->type->name == 'displist' &&
            $msg->status->name == 'draft' &&
            $user->hasPermissionTo('send displist') &&
-           $msg->organization->id !== $user->organization->id
+           $msg->organization->id === $user->organization->id
         ){
                 $status = MessageStatus::where('name',$request->status)->firstOrFail();
                 $msg->status_id = $status->id;
