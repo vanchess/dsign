@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\Period;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;
@@ -25,7 +26,7 @@ class MessagePolicy
      *
      * @return
      */
-    public function create(User $user, ?string $messageType)
+    public function create(User $user, ?string $messageType, ?int $periodId)
     {
         if($messageType === NULL){
             return true;
@@ -36,6 +37,13 @@ class MessagePolicy
                 //if ($user->organization->id !== 9) {  // ГБУ "Курганская поликлиника №2"
                     return Response::deny('Прием реестров закрыт');
                 //}
+            }
+        }
+
+        if ($messageType === 'displist') {
+            $period = Period::find($periodId);
+            if ($period->to < now() ) {
+                return false;
             }
         }
 

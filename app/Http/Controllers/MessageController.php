@@ -144,8 +144,9 @@ class MessageController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 400);
         }
+        $validated = $validator->validated();
 
-        $this->authorize('create', [Message::class, $request->type]);
+        $this->authorize('create', [Message::class, $validated['type'], $validated['period']]);
 
         $msg = new Message();
         $msg->subject   = $request->subject;

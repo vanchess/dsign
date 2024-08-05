@@ -26,6 +26,11 @@ class Message extends Model
         return $this->belongsTo(Organization::class, 'organization_id', 'id');
     }
 
+    public function period()
+    {
+        return $this->belongsTo(Period::class, 'period_id', 'id');
+    }
+
     public function type()
     {
         return $this->belongsTo(MessageType::class, 'type_id', 'id');

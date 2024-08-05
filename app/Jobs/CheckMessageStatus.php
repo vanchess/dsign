@@ -483,7 +483,15 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
                 $msg->status_id === $statusRejectedFlc->id
                 || $msg->status_id === $statusLoaded->id
                 || $msg->status_id === $statusInProgress->id
+                || $msg->status_id === $statusSignedMo->id
             ) {
+                return;
+            }
+
+            if ($msg->period->to < now() ) {
+                // Срок отправки листа прошел -> отклоняем
+                $msg->status_id = $statusRejectedFlc->id;
+                $msg->save();
                 return;
             }
 

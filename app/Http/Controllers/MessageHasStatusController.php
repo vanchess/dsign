@@ -116,6 +116,12 @@ class MessageHasStatusController extends Controller
            $user->hasPermissionTo('send displist') &&
            $msg->organization->id === $user->organization->id
         ){
+            if ($msg->period->to < now() ) {
+                // Срок отправки листа прошел -> отклоняем
+                $statusRejectedFlc = MessageStatus::where('name','rejected_flc')->firstOrFail();
+                $msg->status_id = $statusRejectedFlc->id;
+                $msg->save();
+            } else {
                 $status = MessageStatus::where('name',$request->status)->firstOrFail();
                 $msg->status_id = $status->id;
                 $msg->created_at = now();
@@ -125,8 +131,8 @@ class MessageHasStatusController extends Controller
                 // статуса сообщения в отдельный сервис
 
                 UserChangedMessageStatus::dispatch($msg->id, $msg->type->name, $request->status, $user->id);
-
                 return new MessageStatusResource($status);
+            }
         }
 
         return response()->json(['error' => 'Forbidden'], 403);
