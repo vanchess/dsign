@@ -146,7 +146,7 @@ class MessageController extends Controller
         }
         $validated = $validator->validated();
 
-        $this->authorize('create', [Message::class, $validated['type'], $validated['period']]);
+        $this->authorize('create', [Message::class, $validated['type'] ?? null, $validated['period'] ?? null]);
 
         $msg = new Message();
         $msg->subject   = $request->subject;
