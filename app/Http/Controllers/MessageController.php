@@ -198,7 +198,7 @@ class MessageController extends Controller
         $astra = [35, 79];
         $kapital = [32];
         // Департамента здравоохранения
-        $dzo = [196];
+        $dzo = User::role('dzo')->get()->pluck('id')->toArray();
         // Для писем "почта" (тип не указан)
         if (!$request->type) {
             $attachUsersArr = [];
