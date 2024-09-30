@@ -31,7 +31,7 @@ class MessagePolicy
         if($messageType === NULL){
             return true;
         }
-        /**/
+        /*
         if($messageType === 'reg') {
             if (time() > strtotime('2024-09-06 19:00')) { // KGN -5
                 //if ($user->organization->id !== 9) {  // ГБУ "Курганская поликлиника №2"
@@ -39,7 +39,7 @@ class MessagePolicy
                 //}
             }
         }
-
+        */
         if ($messageType === 'displist') {
             $period = Period::find($periodId);
             if ($period->to < now() ) {
