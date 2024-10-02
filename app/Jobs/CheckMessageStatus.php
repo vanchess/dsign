@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Events\MessageStatusChecked;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -45,6 +46,7 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
     public function handle()
     {
         $msg = $this->msg;
+        $oldStatusId = $msg->status_id;
 
         $statusDraft = MessageStatus::where('name','draft')->firstOrFail();
         $statusReady = MessageStatus::where('name','ready')->firstOrFail();
@@ -513,5 +515,35 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
             }
             $msg->save();
         }
+
+        if ($msg->type->name === 'dn-contract') {
+
+            $mo = true;
+            $tf = true;
+            foreach ($files as $f) {
+                $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
+
+                $mo = $mo && $signUsers->contains(function ($user) {
+                    return $user->hasPermissionTo('sign-mo-lider dn-contract');
+                });
+                $tf = $tf && $signUsers->contains(function ($user) {
+                    return $user->hasPermissionTo('confirm dn-contract');
+                });
+            }
+            // Подписи руководителя => SignedMo
+            if ($mo) {
+                $msg->status_id = $statusSignedMo->id;
+            }
+            if ($mo && $tf) {
+                $msg->status_id = $statusReady->id;
+            }
+            $msg->save();
+        }
+        MessageStatusChecked::dispatch(
+            $msg->id,
+            $msg->type->name,
+            MessageStatus::findOrFail($oldStatusId)->name,
+            MessageStatus::findOrFail($msg->status_id)->name
+        );
     }
 }

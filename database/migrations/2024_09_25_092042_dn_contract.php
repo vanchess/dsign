@@ -17,7 +17,10 @@ class DnContract extends Migration
             $table->id();
             $table->foreignId('msg_id')->nullable();
             $table->string('name');
-            $table->foreignId('mo_id')->nullable();
+            $table->foreignId('mo_organization_id')
+                   ->constrained('tbl_organization')
+                   ->onUpdate('cascade')
+                   ->onDelete('restrict');
             $table->string('ogrn', 13)->nullable();
             $table->timestamp('effective_from')->useCurrent();
             $table->timestamp('effective_to')->default('9999-12-31 23:59:59');
@@ -25,7 +28,6 @@ class DnContract extends Migration
             $table->softDeletes();
 
             $table->foreign('msg_id')->references('id')->on('tbl_msg')->onUpdate('cascade')->onDelete('restrict');
-            $table->foreign('mo_id')->references('id')->on('tbl_mo')->onUpdate('cascade')->onDelete('restrict');
         });
     }
 

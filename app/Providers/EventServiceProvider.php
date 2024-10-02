@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use App\Events\MessageStatusChecked;
 use App\Events\UserChangedMessageStatus;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use App\Events\UserRoleAdd;
+use App\Listeners\CreateDnContract;
 use App\Listeners\ForwardMsg;
 use App\Listeners\OnChangeMsgStatusByUser;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -27,6 +29,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         UserChangedMessageStatus::class => [
             OnChangeMsgStatusByUser::class
+        ],
+        MessageStatusChecked::class => [
+            CreateDnContract::class
         ]
     ];
 
