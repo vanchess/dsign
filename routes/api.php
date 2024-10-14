@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DispListEntriesController;
+use App\Http\Controllers\DnListEntriesController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\FileUpload;
 use App\Http\Controllers\MessageStatusController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\MedicalInstitutionController;
 use App\Http\Controllers\MessageDispListsController;
+use App\Http\Controllers\MessageDnListsController;
 use App\Http\Controllers\PeriodController;
 use App\Http\Controllers\PDController;
 use App\Http\Controllers\PreventiveMedicalMeasureTypeController;
@@ -65,9 +67,10 @@ Route::group(array('prefix' => 'v1'), function()
         Route::apiResource('msg.files', MessageFilesController::class);
         Route::apiResource('msg.status', MessageHasStatusController::class)->only(['index', 'store']);
         Route::apiResource('msg.displists', MessageDispListsController::class)->only(['index']);
+        Route::apiResource('msg.dnlists', MessageDnListsController::class)->only(['index']);
         Route::apiResource('file.sign', FileFileSignController::class);
         Route::apiResource('displist.entries', DispListEntriesController::class)->only(['index', 'store', 'update', 'destroy']);
-
+        Route::apiResource('dnlist.entries', DnListEntriesController::class)->only(['index', 'store', 'update', 'destroy']);
     });
 
     /*

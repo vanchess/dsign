@@ -18,6 +18,8 @@ use App\Models\Organization;
 
 use App\Jobs\CheckMessageStatus;
 use App\Models\DispList;
+use App\Models\DnContract;
+use App\Models\DnList;
 use Validator;
 use Illuminate\Validation\Rule;
 
@@ -627,6 +629,45 @@ class MessageController extends Controller
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
         }
+            // Для Списков сотрудников на диспансерное наблюдение
+        if ($request->type == 'dn-list') {
+
+            $dl = new DnList();
+            $dl->msg_id = $msg->id;
+            $dnContract = DnContract::where('ogrn',$msg->text)->firstOrFail();
+            $dl->contract_id = $dnContract->id;
+
+            $dl->save();
+
+            $attachUsersArr = [$msg->user_id];
+            // Пересылаем
+            $receiveAllDnListUsersIds = User::permission('receive all-dn-list')->get()->pluck('id')->toArray();
+
+            $attachUsersArr = array_merge(
+                $attachUsersArr,
+                $receiveAllDnListUsersIds
+            );
+
+            $org  = $user->organization;
+            $msg->status_id = 1; // черновик
+            $msg->organization_id = $org->id;
+
+            $msg->save();
+            $orgUsers = $org->users()->with('permissions')->get();
+            // Добавляем пользователей
+            foreach ($orgUsers as $u) {
+                if (
+                    $u->hasPermissionTo('receive mo-dn-list')
+                    || $u->hasPermissionTo('sign-mo-lider dn-list')
+                ) {
+                    $attachUsersArr[] = $u->id;
+                }
+            }
+
+            $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
+            $msg->to()->syncWithoutDetaching($attachUsersArr);
+        }
+
 
         CheckMessageStatus::dispatch($msg);
 

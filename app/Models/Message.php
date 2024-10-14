@@ -63,6 +63,11 @@ class Message extends Model
 
     public function dnContract()
     {
-        return $this->hasMany(DispList::class, 'msg_id', 'id');
+        return $this->hasMany(DnContract::class, 'msg_id', 'id');
+    }
+
+    public function dnList()
+    {
+        return $this->hasMany(DnList::class, 'msg_id', 'id');
     }
 }
