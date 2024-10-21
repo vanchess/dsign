@@ -135,6 +135,24 @@ class MessageHasStatusController extends Controller
             }
         }
 
+        if($request->status == 'sent' &&
+           $msg->type->name == 'dn-list' &&
+           $msg->status->name == 'draft' &&
+           $user->hasPermissionTo('send dn-list') &&
+           $msg->organization->id === $user->organization->id
+        ){
+            $status = MessageStatus::where('name',$request->status)->firstOrFail();
+            $msg->status_id = $status->id;
+            $msg->created_at = now();
+            $msg->save();
+
+            // TODO: Вынести функционал изменения пользователем
+            // статуса сообщения в отдельный сервис
+
+            UserChangedMessageStatus::dispatch($msg->id, $msg->type->name, $request->status, $user->id);
+            return new MessageStatusResource($status);
+        }
+
         return response()->json(['error' => 'Forbidden'], 403);
     }
 }

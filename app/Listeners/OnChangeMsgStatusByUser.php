@@ -9,6 +9,7 @@ use App\Models\Message;
 use App\Models\MessageStatus;
 use App\Models\PreventiveMedicalMeasureTypes;
 use App\Services\PdfService;
+use DnContract;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 // use Illuminate\Queue\InteractsWithQueue;
@@ -38,7 +39,49 @@ class OnChangeMsgStatusByUser implements ShouldQueue
      */
     public function handle(UserChangedMessageStatus $event)
     {
-        if ($event->msgType == 'displist' || $event->statusName == 'sent') {
+        if ($event->msgType == 'dn-list' && $event->statusName == 'sent') {
+            $stampParam = [
+                'listW' => 842,
+                'listH' => 595,
+                'fontName' => '/CourierC.otf',
+                'color' => '0 0 0',
+                'fontSize' => 10,
+                'perPage' => 47
+            ];
+
+            $msg = Message::findOrFail($event->msgId);
+            $contract = $msg->dnContract;
+            $lines = [
+                "Список работающих застрахованных лиц на диспансерное наблюдение.",
+                "Медицинская организация, осуществляющая диспансерное наблюдение: {$msg->organization->name}",
+                "Работодатель: $contract->name (ОГРН: $contract->ogrn)",
+                ""
+            ];
+            $entries = $msg->displists[0]->entries()->orderBy('order')->get();
+            foreach ($entries as $e) {
+                $lines[] = "$e->last_name $e->first_name $e->middle_name $e->birthday ЕНП:$e->enp СНИЛС:$e->snils $e->description $e->contact_info";
+            }
+            $path = 'DnList';
+            $extension = 'pdf';
+            $filename = $path . DIRECTORY_SEPARATOR . uniqid('',true).'.'.$extension;
+
+            $this->pdfService->createDocument($filename, $lines, $stampParam);
+
+            $fileModel = new File();
+            $fileModel->name = 'Список сотрудников на диспансерное наблюдение.'.$extension;
+            $fileModel->file_path   = $filename;
+            $fileModel->user_id     = $event->userId;
+            $fileModel->description = '';
+            $fileModel->save();
+
+            $msg->files()->attach($fileModel);
+            $msg->status_id = MessageStatus::where('name', 'signing')->first()->id;
+            $msg->save();
+        }
+
+
+
+        if ($event->msgType == 'displist' && $event->statusName == 'sent') {
             $stampParam = [
                 'listW' => 842,
                 'listH' => 595,
