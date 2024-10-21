@@ -13,6 +13,7 @@ class CreateDnContractService {
         $contract->name = $name;
         $contract->mo_organization_id = $moOrganizationId;
         $contract->ogrn = $ogrn;
+        $contract->effective_from = now();
         $contract->save();
     }
 
