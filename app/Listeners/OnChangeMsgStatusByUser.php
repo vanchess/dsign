@@ -50,7 +50,7 @@ class OnChangeMsgStatusByUser implements ShouldQueue
             ];
 
             $msg = Message::findOrFail($event->msgId);
-            $contract = $msg->dnContract;
+            $contract = $msg->dnContract[0];
             $lines = [
                 "Список работающих застрахованных лиц на диспансерное наблюдение.",
                 "Медицинская организация, осуществляющая диспансерное наблюдение: {$msg->organization->name}",
