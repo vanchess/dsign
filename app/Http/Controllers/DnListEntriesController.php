@@ -92,7 +92,7 @@ class DnListEntriesController extends Controller
      */
     public function update(Request $request, DnList $dnlist, DnListEntry $entry, Validator $v)
     {
-        if ($entry->dnlist_id !== $dnlist->id)
+        if ($entry->dn_list_id !== $dnlist->id)
         {
             return response()->json(['error' => 'Forbidden'], 403);
         }
@@ -145,7 +145,7 @@ class DnListEntriesController extends Controller
      */
     public function destroy(DnList $dnlist, DnListEntry $entry)
     {
-        if ($entry->dnlist_id !== $dnlist->id)
+        if ($entry->dn_list_id !== $dnlist->id)
         {
             return response()->json(['error' => 'Forbidden'], 403);
         }

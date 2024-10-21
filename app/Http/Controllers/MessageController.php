@@ -629,12 +629,17 @@ class MessageController extends Controller
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
             $msg->to()->syncWithoutDetaching($attachUsersArr);
         }
-            // Для Списков сотрудников на диспансерное наблюдение
+        // Для Списков сотрудников на диспансерное наблюдение
         if ($request->type == 'dn-list') {
+            $org  = $user->organization;
 
             $dl = new DnList();
             $dl->msg_id = $msg->id;
-            $dnContract = DnContract::where('ogrn',$msg->text)->firstOrFail();
+            $date = date('Y-m-d H:i:s');
+            $dnContract = DnContract::where('ogrn',$msg->text)
+                            ->where('mo_organization_id',$org->id)
+                            ->WhereRaw("? BETWEEN effective_from AND effective_to", [$date])
+                            ->firstOrFail();
             $dl->contract_id = $dnContract->id;
 
             $dl->save();
@@ -648,7 +653,6 @@ class MessageController extends Controller
                 $receiveAllDnListUsersIds
             );
 
-            $org  = $user->organization;
             $msg->status_id = 1; // черновик
             $msg->organization_id = $org->id;
 
