@@ -50,14 +50,15 @@ class OnChangeMsgStatusByUser implements ShouldQueue
             ];
 
             $msg = Message::findOrFail($event->msgId);
-            $contract = $msg->dnContract[0];
+            $dnlist = $msg->dnLists[0];
+            $contract = $dnlist->contract;
             $lines = [
                 "Список работающих застрахованных лиц на диспансерное наблюдение.",
                 "Медицинская организация, осуществляющая диспансерное наблюдение: {$msg->organization->name}",
                 "Работодатель: $contract->name (ОГРН: $contract->ogrn)",
                 ""
             ];
-            $entries = $msg->displists[0]->entries()->orderBy('order')->get();
+            $entries = $dnlist->entries()->orderBy('order')->get();
             foreach ($entries as $e) {
                 $lines[] = "$e->last_name $e->first_name $e->middle_name $e->birthday ЕНП:$e->enp СНИЛС:$e->snils $e->description $e->contact_info";
             }

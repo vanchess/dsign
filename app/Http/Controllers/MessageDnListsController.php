@@ -15,7 +15,7 @@ class MessageDnListsController extends Controller
      */
     public function index(Message $msg)
     {
-        return new DnListCollection($msg->dnList);
+        return new DnListCollection($msg->dnLists);
     }
 
     /**

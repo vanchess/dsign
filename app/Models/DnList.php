@@ -22,4 +22,9 @@ class DnList extends Model
     {
         return $this->belongsTo(Message::class, 'msg_id', 'id');
     }
+
+    public function contract()
+    {
+        return $this->belongsTo(DnContract::class, 'contract_id', 'id');
+    }
 }
