@@ -110,6 +110,17 @@ class MessageHasStatusController extends Controller
                 return new MessageStatusResource($status);
         }
 
+        if(
+            ($request->status == 'rejected_flc' || $request->status == 'in_progress' || $request->status == 'loaded' /*|| $request->status == 'signed_mo'*/)
+            && $msg->type->name == 'dn-list'
+            && $user->hasPermissionTo('auto-set-status dn-list')
+        ){
+                $status = MessageStatus::where('name',$request->status)->firstOrFail();
+                $msg->status_id = $status->id;
+                $msg->save();
+                return new MessageStatusResource($status);
+        }
+
         if($request->status == 'sent' &&
            $msg->type->name == 'displist' &&
            $msg->status->name == 'draft' &&

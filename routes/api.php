@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DispListEntriesController;
+use App\Http\Controllers\DnContractController;
 use App\Http\Controllers\DnListEntriesController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\FileUpload;
@@ -61,7 +62,8 @@ Route::group(array('prefix' => 'v1'), function()
             'period' => PeriodController::class,
             //'file-signs' => FileSignController::class,
             'preventive-medical-measure' => PreventiveMedicalMeasureTypeController::class,
-            'mo' => MedicalInstitutionController::class
+            'mo' => MedicalInstitutionController::class,
+            'dncontract' => DnContractController::class
         ]);
         Route::apiResource('msg.to-users', MessageToUsersController::class);
         Route::apiResource('msg.files', MessageFilesController::class);

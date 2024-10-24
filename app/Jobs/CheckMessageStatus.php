@@ -539,6 +539,37 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
             }
             $msg->save();
         }
+
+        if ($msg->type->name === 'dn-list') {
+            $statusRejectedFlc = MessageStatus::where('name','rejected_flc')->firstOrFail();
+            $statusLoaded = MessageStatus::where('name','loaded')->firstOrFail();
+            $statusInProgress = MessageStatus::where('name','in_progress')->firstOrFail();
+
+            if (
+                $msg->status_id === $statusRejectedFlc->id
+                || $msg->status_id === $statusLoaded->id
+                || $msg->status_id === $statusInProgress->id
+                || $msg->status_id === $statusSignedMo->id
+            ) {
+                return;
+            }
+
+            $mo = true;
+            foreach ($files as $f) {
+                $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
+
+                $mo = $mo && $signUsers->contains(function ($user) {
+                    return $user->hasPermissionTo('sign-mo-lider dn-list');
+                });
+            }
+            // Подписи руководителя => SignedMo
+            if ($mo) {
+                $msg->status_id = $statusSignedMo->id;
+            }
+            $msg->save();
+        }
+
+
         MessageStatusChecked::dispatch(
             $msg->id,
             $msg->type->name,
