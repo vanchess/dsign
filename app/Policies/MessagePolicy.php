@@ -31,15 +31,15 @@ class MessagePolicy
         if($messageType === NULL){
             return true;
         }
-        /*
+        /**/
         if($messageType === 'reg') {
-            if (time() > strtotime('2024-09-06 19:00')) { // KGN -5
+            if (time() > strtotime('2024-11-08 03:00')) { // KGN -5
                 //if ($user->organization->id !== 9) {  // ГБУ "Курганская поликлиника №2"
                     return Response::deny('Прием реестров закрыт');
                 //}
             }
         }
-        */
+
         if ($messageType === 'displist') {
             $period = Period::find($periodId);
             if ($period->to < now() ) {
