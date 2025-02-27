@@ -36,7 +36,7 @@ class MessageController extends Controller
 
         $validator = Validator::make($request->all(), [
             'type'      => 'array',
-            'type.*'    => 'string|in:notype,bill,mek,mee,reconciliation-act,reg,agreement-fin,contract-payment-oms,contract-financial-support-oms,agreement-fin-salaries,displist,dn-list,dn-contract|distinct|exists:App\Models\MessageType,name',
+            'type.*'    => 'string|distinct|exists:App\Models\MessageType,name',
             'status'   => 'array',
             'status.*'    => 'string|distinct|exists:App\Models\MessageStatus,name',
             'period'   => 'array',
@@ -663,6 +663,67 @@ class MessageController extends Controller
                 if (
                     $u->hasPermissionTo('receive mo-dn-list')
                     || $u->hasPermissionTo('sign-mo-lider dn-list')
+                ) {
+                    $attachUsersArr[] = $u->id;
+                }
+            }
+
+            $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
+            $msg->to()->syncWithoutDetaching($attachUsersArr);
+        }
+
+        // Для заявок СМО на аванс
+        if ($request->type == 'smo-fin-advance') {
+            $mType = 'smo-fin-advance';
+            // Пересылаем
+            $attachUsersArr = array_merge(
+                [$msg->user_id],
+                User::permission('receive all-'.$mType)->get()->pluck('id')->toArray(),
+            );
+
+            $org  = $user->organization;
+            $msg->subject   = $msg->subject . ' ' . $org->short_name;
+            $msg->organization_id = $org->id;
+            $msg->period_id = $request->period;
+            $msg->save();
+            $orgUsers = $org->users()->with('permissions')->get();
+            // Добавляем пользователей
+            // со стороны СМО
+            foreach ($orgUsers as $u) {
+                if (
+                    $u->hasPermissionTo('receive smo-' . $mType)
+                    || $u->hasPermissionTo('sign-smo-lider ' . $mType)
+                    || $u->hasPermissionTo('sign-smo-accountant ' . $mType)
+                ) {
+                    $attachUsersArr[] = $u->id;
+                }
+            }
+
+            $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
+            $msg->to()->syncWithoutDetaching($attachUsersArr);
+        }
+        // Для заявок СМО на расчет
+        if ($request->type == 'smo-fin-payment') {
+            $mType = 'smo-fin-payment';
+            // Пересылаем
+            $attachUsersArr = array_merge(
+                [$msg->user_id],
+                User::permission('receive all-'.$mType)->get()->pluck('id')->toArray(),
+            );
+
+            $org  = $user->organization;
+            $msg->subject   = $msg->subject . ' ' . $org->short_name;
+            $msg->organization_id = $org->id;
+            $msg->period_id = $request->period;
+            $msg->save();
+            $orgUsers = $org->users()->with('permissions')->get();
+            // Добавляем пользователей
+            // со стороны СМО
+            foreach ($orgUsers as $u) {
+                if (
+                    $u->hasPermissionTo('receive smo-' . $mType)
+                    || $u->hasPermissionTo('sign-smo-lider ' . $mType)
+                    || $u->hasPermissionTo('sign-smo-accountant ' . $mType)
                 ) {
                     $attachUsersArr[] = $u->id;
                 }
