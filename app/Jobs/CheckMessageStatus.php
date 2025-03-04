@@ -568,6 +568,58 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
             }
             $msg->save();
         }
+        if ($msg->type->name === 'smo-fin-advance') {
+
+            $smoLider = true;
+            $smoAccountant = true;
+            foreach ($files as $f) {
+                $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
+
+                $smoAccountant = $smoAccountant && $signUsers->contains(function ($user) {
+                    return $user->hasPermissionTo('sign-smo-accountant smo-fin-advance');
+                });
+                $smoLider = $smoLider && $signUsers->contains(function ($user) {
+                    return $user->hasPermissionTo('sign-smo-lider smo-fin-advance');
+                });
+            }
+            // 
+            if ($smoAccountant) {
+                $msg->status_id = $statusSigning->id;
+            }
+            if ($smoLider) {
+                $msg->status_id = $statusSigning->id;
+            }
+            if ($smoAccountant && $smoLider) {
+                $msg->status_id = $statusReady->id;
+            }
+            $msg->save();
+        }
+        if ($msg->type->name === 'smo-fin-payment') {
+
+            $smoLider = true;
+            $smoAccountant = true;
+            foreach ($files as $f) {
+                $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
+
+                $smoAccountant = $smoAccountant && $signUsers->contains(function ($user) {
+                    return $user->hasPermissionTo('sign-smo-accountant smo-fin-payment');
+                });
+                $smoLider = $smoLider && $signUsers->contains(function ($user) {
+                    return $user->hasPermissionTo('sign-smo-lider smo-fin-payment');
+                });
+            }
+            // 
+            if ($smoAccountant) {
+                $msg->status_id = $statusSigning->id;
+            }
+            if ($smoLider) {
+                $msg->status_id = $statusSigning->id;
+            }
+            if ($smoAccountant && $smoLider) {
+                $msg->status_id = $statusReady->id;
+            }
+            $msg->save();
+        }
 
 
         MessageStatusChecked::dispatch(
