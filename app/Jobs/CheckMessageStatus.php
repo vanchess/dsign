@@ -150,6 +150,12 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
                 // Проверяем есть ли подпись специалиста
                 if ($tfSpecialist) {
                     $msg->status_id = $statusSignedBySpecialist->id;
+                
+                    // Для категории Протокол => SignedByHead (подписано ТФ ОМС)
+                    $msgCategories = $msg->category()->pluck('category_id')->toArray();
+                    if (in_array(16, $msgCategories)) {
+                        $msg->status_id = $statusSignedByHead->id;
+                    }
                 }
             }
             if ($msg->status_id === $statusSignedBySpecialist->id) {
