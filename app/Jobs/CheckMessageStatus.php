@@ -626,6 +626,33 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
             }
             $msg->save();
         }
+        if ($msg->type->name === 'mtr-refusal-reasons') {
+            $tfSpecialist = true;
+            $tfHead = true;
+            foreach ($files as $f) {
+                $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
+
+                $tfSpecialist = $tfSpecialist && $signUsers->contains(function ($user) {
+                    return $user->hasPermissionTo('sign-specialist mtr-refusal-reasons');
+                });
+                $tfHead = $tfHead && $signUsers->contains(function ($user) {
+                    return $user->hasPermissionTo('sign-tf-lider mtr-refusal-reasons');
+                });
+            }
+            // 
+            if ($tfSpecialist && $tfHead) {
+                $msg->status_id = $statusReady->id;
+            } else {
+                if ($tfSpecialist) {
+                    $msg->status_id = $statusSignedBySpecialist->id;
+                }
+                if ($tfHead) {
+                    $msg->status_id = $statusSigning->id;
+                }
+            }
+            
+            $msg->save();
+        }
 
 
         MessageStatusChecked::dispatch(

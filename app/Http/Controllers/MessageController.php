@@ -129,7 +129,8 @@ class MessageController extends Controller
                     || $request->type === 'contract-payment-oms'
                     || $request->type === 'mek'
                     || $request->type === 'mee'
-                    || $request->type === 'reconciliation-act';
+                    || $request->type === 'reconciliation-act'
+                    || $request->type === 'mtr-refusal-reasons';
                 }),
                 'array',
                 'min:1'
@@ -724,6 +725,40 @@ class MessageController extends Controller
                     $u->hasPermissionTo('receive smo-' . $mType)
                     || $u->hasPermissionTo('sign-smo-lider ' . $mType)
                     || $u->hasPermissionTo('sign-smo-accountant ' . $mType)
+                ) {
+                    $attachUsersArr[] = $u->id;
+                }
+            }
+
+            $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
+            $msg->to()->syncWithoutDetaching($attachUsersArr);
+        }
+        // Для Ведомость причин отказа
+        if ($request->type == 'mtr-refusal-reasons') {
+            $mType = 'mtr-refusal-reasons';
+
+            $orgId = $request->toOrg[0];
+            $toOrg  = Organization::find($orgId);
+            $msg->organization_id = $toOrg->id;
+            $msg->subject   = $msg->subject . ' ' . $toOrg->short_name;
+            $msg->period_id = $request->period;
+            $msg->save();
+
+            // Пересылаем
+            $attachUsersArr = array_merge(
+                [$msg->user_id],
+                User::permission('receive all-'.$mType)->get()->pluck('id')->toArray(),
+                User::permission('sign-tf-lider '.$mType)->get()->pluck('id')->toArray(),
+                User::permission('sign-specialist '.$mType)->get()->pluck('id')->toArray(),
+            );
+
+            
+            $orgUsers = $toOrg->users()->with('permissions')->get();
+            // Добавляем пользователей
+            // со стороны МО
+            foreach ($orgUsers as $u) {
+                if (
+                    $u->hasPermissionTo('receive mo-' . $mType)
                 ) {
                     $attachUsersArr[] = $u->id;
                 }
