@@ -188,7 +188,7 @@ class MessageController extends Controller
         // 90 - Бурсина
         // 91 - Хохлачева
         // 281 - Сукманова
-        $fin = [160, 161];
+        $fin = User::role('fin')->get()->pluck('id')->toArray();
         $peo = [67, 71, 72, 73, 89];
         $mtr = [90, 91, 281];
         $buch = [134, 171];
