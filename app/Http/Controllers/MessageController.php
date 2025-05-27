@@ -182,8 +182,6 @@ class MessageController extends Controller
         // 71 - Злыднева
         // 72 - Хлыстова
         // 73 - Гончарова
-        // 11 - Сахатский
-        // 88 - Кобзарь
         // 89 - Симонова
         // 90 - Бурсина
         // 91 - Хохлачева
@@ -193,7 +191,7 @@ class MessageController extends Controller
         $mtr = [90, 91, 281];
         $buch = [134, 171];
         $omszpz = User::role('omszpz')->get()->pluck('id')->toArray();
-        $leadership = [11, 88];
+        $leadership = User::role('leadership')->get()->pluck('id')->toArray();
         $myagkaya = [305];
         $accountant = [134];
         $lawyers = [189,190]; // Юристы
@@ -225,9 +223,6 @@ class MessageController extends Controller
                 Временное решение.
                 Все письма в разделе почта отправленные одному из абонентов отдела ПЭО
                 дублируются для всего отдела (все сотрудники отдела добавляются в получатели)
-
-                2. Все письма в разделе почта отправленные директору(11)
-                дублируются для Кобзарь(88)
             */
             foreach ($request->to as $toUser) {
                 if (in_array($toUser, $peo)) {
@@ -239,15 +234,7 @@ class MessageController extends Controller
                 }
 
             }
-            foreach ($request->to as $toUser) {
-                if ((int)$toUser === 11) {
-                    $attachUsersArr = array_merge(
-                        $attachUsersArr,
-                        [88]
-                    );
-                    break;
-                }
-            }
+
             if (count($attachUsersArr) > 0) {
                 $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
                 $msg->to()->syncWithoutDetaching($attachUsersArr);

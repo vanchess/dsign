@@ -74,42 +74,50 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
         $statusSignedMo = MessageStatus::where('name','signed_mo')->firstOrFail();
 
         if ($msg->type->name === 'mek') {
-            $specialist = true;
-            $head = true;
-            $mo = true;
+            $tfSpecialist = true;
+            $tfHead = true;
+            $moHead = true;
 
             foreach ($files as $f) {
                 $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
 
-                $specialist = $specialist
-                    && ($signUsers->contains('id', 71) || $signUsers->contains('id', 90));
-                $head = $head && ($signUsers->contains('id', 11) || $signUsers->contains('id', 88));
+                $tempTfSpecialist = false;
+                $tempTfHead = false;
+                $tempMoHead = false;
 
-                $tempMo = false;
                 foreach ($signUsers as $u) {
+                    if ($u->hasPermissionTo('sign-specialist mek')) {
+                        $tempTfSpecialist = true;
+                    }
+                    if ($u->hasPermissionTo('sign-tf-lider mek')) {
+                        $tempTfHead = true;
+                    }
                     if ($u->hasPermissionTo('sign-mo-lider mek')) {
-                        $tempMo = true;
+                        $tempMoHead = true;
                     }
                 }
-                $mo = $mo && $tempMo;
+
+                $tfSpecialist = $tfSpecialist && $tempTfSpecialist;
+                $tfHead = $tfHead && $tempTfHead;
+                $moHead = $moHead && $tempMoHead;
             }
 
 
             if ($msg->status_id === $statusSent->id) {
                 // Проверяем есть ли подпись специалиста
-                if ($specialist) {
+                if ($tfSpecialist) {
                     $msg->status_id = $statusSignedBySpecialist->id;
                 }
             }
             if ($msg->status_id === $statusSignedBySpecialist->id) {
                 // Проверяем есть ли подпись руководителя ТФОМС
-                if ($head) {
+                if ($tfHead) {
                     $msg->status_id = $statusSignedByHead->id;
                 }
             }
             if ($msg->status_id === $statusSignedByHead->id) {
                 // Проверяем есть ли подпись руководителя МО
-                if ($mo) {
+                if ($moHead) {
                     $msg->status_id = $statusReady->id;
                 }
             }
