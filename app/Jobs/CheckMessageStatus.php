@@ -229,7 +229,7 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
             }
             // Для ФИН и BUCH
             $fin = User::role('fin')->get()->pluck('id')->toArray();
-            $buch = [134, 171];
+            $buch = User::role('buch')->get()->pluck('id')->toArray();
             if (in_array($msg->user_id, $fin) || in_array($msg->user_id, $buch)) {
                 // Подписи специалиста И бухгалтера И руководителя ТФОМС => SignedByHead
                 if ($tfHead && $tfAccountant) {

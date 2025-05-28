@@ -178,23 +178,15 @@ class MessageController extends Controller
         }
 
         // TODO: сделать нормально
-        // 67 - Баскова
-        // 71 - Злыднева
-        // 72 - Хлыстова
-        // 73 - Гончарова
-        // 89 - Симонова
-        // 90 - Бурсина
-        // 91 - Хохлачева
-        // 281 - Сукманова
         $fin = User::role('fin')->get()->pluck('id')->toArray();
-        $peo = [67, 71, 72, 73, 89];
-        $mtr = [90, 91, 281];
-        $buch = [134, 171];
+        $peo = User::role('peo')->get()->pluck('id')->toArray();
+        $mtr = User::role('mtr')->get()->pluck('id')->toArray();
+        $buch = User::role('buch')->get()->pluck('id')->toArray();
         $omszpz = User::role('omszpz')->get()->pluck('id')->toArray();
         $leadership = User::role('leadership')->get()->pluck('id')->toArray();
-        $myagkaya = [305];
-        $accountant = [134];
-        $lawyers = [189,190]; // Юристы
+        $tfDeputyDirectorOms = User::role('tf-deputy-director-oms')->get()->pluck('id')->toArray();
+        $tfChiefAccountant = User::role('tf-chief-accountant')->get()->pluck('id')->toArray();
+        $lawyers = User::role('lawyer')->get()->pluck('id')->toArray(); // Юристы
         // Страховые
         $astra = [35, 79];
         $kapital = [32];
@@ -318,7 +310,7 @@ class MessageController extends Controller
             $attachUsersArr = array_merge(
                 $attachUsersArr,
                 $leadership,
-                $accountant
+                $tfChiefAccountant
             );
 
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
@@ -413,7 +405,7 @@ class MessageController extends Controller
                 $attachUsersArr,
                 $omszpz,
                 $leadership,
-                $myagkaya
+                $tfDeputyDirectorOms
             );
 
             $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
