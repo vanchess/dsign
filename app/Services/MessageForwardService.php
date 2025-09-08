@@ -59,8 +59,8 @@ class MessageForwardService {
         $user = User::find($msgRecipientId);
         $msgIds = $user->incomingMessages()
                     ->whereIn('type_id', $msgTypeIdArr)
-                    ->whereAnd('tbl_msg.created_at','>',$fromDateTime)
-                    ->whereAnd('tbl_msg.created_at','<',$toDateTime)
+                    ->where('tbl_msg.created_at','>',$fromDateTime)
+                    ->where('tbl_msg.created_at','<',$toDateTime)
                     ->get()
                     ->pluck('id');
         foreach ($attachToUsersIdArr as $userId) {
