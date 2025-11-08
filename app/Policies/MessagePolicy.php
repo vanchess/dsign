@@ -33,7 +33,7 @@ class MessagePolicy
         }
         
         if($messageType === 'reg') {
-            if (time() < strtotime('2025-06-30 19:00')) { // KGN -5
+            if (time() > strtotime('2025-11-09 19:00')) { // KGN -5
                 //if ($user->organization->id !== 9) {  // ГБУ "Курганская поликлиника №2"
                     return Response::deny('Прием реестров закрыт');
                 //}
