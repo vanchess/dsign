@@ -661,6 +661,52 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
             
             $msg->save();
         }
+        if ($msg->type->name === 'rmee') {
+            $tfFinSpecialist = true;
+            $tfOmsZpzSpecialist = true;
+            $tfHead  = true;
+            $moHead  = true;
+            $smoHead = true;
+
+            foreach ($files as $f) {
+                $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
+
+                $tfFinSpecialist = $tfFinSpecialist && $signUsers->contains(function ($user) {
+                    return $user->hasPermissionTo('sign-tf-fin-spec rmee');
+                });
+                $tfOmsZpzSpecialist = $tfOmsZpzSpecialist && $signUsers->contains(function ($user) {
+                    return $user->hasPermissionTo('sign-tf-omszpz-spec rmee');
+                });
+                $tfHead = $tfHead && $signUsers->contains(function ($user) {
+                    return $user->hasPermissionTo('sign-tf-lider rmee');
+                });
+                $moHead = $moHead && $signUsers->contains(function ($user) {
+                    return $user->hasPermissionTo('sign-mo-lider rmee');
+                });
+                $smoHead = $smoHead && $signUsers->contains(function ($user) {
+                    return $user->hasPermissionTo('sign-smo-lider rmee');
+                });
+
+            }
+            if ($tfFinSpecialist && $tfOmsZpzSpecialist && $tfHead && $moHead && $smoHead) {
+                $msg->status_id = $statusReady->id;
+            } else {
+                if ($tfFinSpecialist || $tfOmsZpzSpecialist || $tfHead || $moHead || $smoHead) {
+                    $msg->status_id = $statusSigning->id;
+                }
+                if ($tfFinSpecialist && $tfOmsZpzSpecialist) {
+                    $msg->status_id = $statusSignedBySpecialist->id;
+                }
+                if ($tfFinSpecialist && $tfOmsZpzSpecialist && $tfHead) {
+                    $msg->status_id = $statusSignedByHead->id;
+                }
+                if ($tfFinSpecialist && $tfOmsZpzSpecialist && $tfHead && $moHead) {
+                    $msg->status_id = $statusSignedMo->id;
+                }
+            }
+            
+            $msg->save();
+        }
 
 
         MessageStatusChecked::dispatch(

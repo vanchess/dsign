@@ -747,6 +747,57 @@ class MessageController extends Controller
             $msg->to()->syncWithoutDetaching($attachUsersArr);
         }
 
+        // Для Повторная МЭЭ (Р/Э)
+        if ($request->type == 'rmee') {
+            $mType = 'rmee';
+
+            $orgId = $request->toOrg[0];
+            $toOrg  = Organization::find($orgId);
+            $msg->organization_id = $toOrg->id;
+            $msg->subject   = $msg->subject . ' ' . $toOrg->short_name;
+            $msg->period_id = $request->period;
+            $msg->save();
+
+            // Пересылаем
+            $attachUsersArr = array_merge(
+                [$msg->user_id],
+                User::permission('receive all-'.$mType)->get()->pluck('id')->toArray(),
+                User::permission('sign-tf-lider '.$mType)->get()->pluck('id')->toArray(),
+                User::permission('sign-tf-omszpz-spec '.$mType)->get()->pluck('id')->toArray(),
+                User::permission('sign-tf-fin-spec '.$mType)->get()->pluck('id')->toArray(),
+            );
+
+            
+            $orgUsers = $toOrg->users()->with('permissions')->get();
+            // Добавляем пользователей
+            // со стороны МО
+            foreach ($orgUsers as $u) {
+                if (
+                    $u->hasPermissionTo('receive ' . $mType)
+                ) {
+                    $attachUsersArr[] = $u->id;
+                }
+            }
+
+            // Добавляем пользователей 
+            // со стороны СМО
+
+            // Для категории Капитал
+            $msgCategories = $msg->category()->pluck('category_id')->toArray();
+            if (in_array(1, $msgCategories)) {
+                $attachUsersArr[] = 32;
+            }
+            // Для категории Астрамед
+            if (in_array(2, $msgCategories)) {
+                $attachUsersArr[] = 35;
+                $attachUsersArr[] = 79;
+            }
+            $msg->to()->syncWithoutDetaching($attachUsersArr);
+
+            $attachUsersArr = array_unique($attachUsersArr, SORT_NUMERIC);
+            $msg->to()->syncWithoutDetaching($attachUsersArr);
+        }
+
 
         CheckMessageStatus::dispatch($msg);
 
