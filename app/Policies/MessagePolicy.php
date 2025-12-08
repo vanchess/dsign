@@ -43,7 +43,7 @@ class MessagePolicy
 
         if ($messageType === 'displist') {
             $period = Period::find($periodId);
-            if ($period->to < now() ) {
+            if ($period->to < now()->subMonth() ) {
                 return false;
             }
         }
