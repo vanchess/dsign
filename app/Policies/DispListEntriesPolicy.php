@@ -60,7 +60,7 @@ class DispListEntriesPolicy
     {
         $msg = $displist->message;
 
-        if ($msg->period->to < now()->subMonth() ) {
+        if ($msg->period->to < now() ) {
             return false;
         }
         if ($msg->organization->id !== $user->organization->id) {
