@@ -703,6 +703,14 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
                 if ($tfFinSpecialist && $tfOmsZpzSpecialist && $tfHead && $moHead) {
                     $msg->status_id = $statusSignedMo->id;
                 }
+
+                // Для категории Протокол => SignedByHead (подписано ТФ ОМС)
+                $msgCategories = $msg->category()->pluck('category_id')->toArray();
+                if (in_array(16, $msgCategories)) {
+                    if ($moHead && $tfOmsZpzSpecialist) {
+                        $msg->status_id = $statusSignedBySpecialist->id;
+                    }
+                }
             }
             
             $msg->save();
