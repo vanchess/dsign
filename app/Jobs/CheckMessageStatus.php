@@ -708,7 +708,7 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
                 $msgCategories = $msg->category()->pluck('category_id')->toArray();
                 if (in_array(16, $msgCategories)) {
                     if ($moHead && $tfOmsZpzSpecialist) {
-                        $msg->status_id = $statusSignedBySpecialist->id;
+                        $msg->status_id = $statusReady->id;
                     }
                 }
             }
