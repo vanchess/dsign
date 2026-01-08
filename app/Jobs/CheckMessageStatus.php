@@ -504,7 +504,7 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
                 return;
             }
 
-            if ($msg->period->to < now() ) {
+            if ($msg->period->to < now()->subMonth() ) {
                 // Срок отправки листа прошел -> отклоняем
                 $msg->status_id = $statusRejectedFlc->id;
                 $msg->save();
