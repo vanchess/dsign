@@ -182,7 +182,6 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
         }
 
         if ($msg->type->name === 'reconciliation-act') {
-            $tfSpecialist = true;
             $tfHead = true;
             $tfAccountant = true;
             $moHead = true;
@@ -191,15 +190,11 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
             foreach ($files as $f) {
                 $signUsers = $f->signUsers()->where('verified_on_server_success',true)->distinct()->get();
 
-                $tempTfSpecialist = false;
                 $tempTfHead = false;
                 $tempTfAccountant = false;
                 $tempMoHead = false;
                 $tempMoAccountant = false;
                 foreach ($signUsers as $u) {
-                    if ($u->hasPermissionTo('sign-specialist reconciliation-act')) {
-                        $tempTfSpecialist = true;
-                    }
                     if ($u->hasPermissionTo('sign-tf-lider reconciliation-act')) {
                         $tempTfHead = true;
                     }
@@ -213,28 +208,14 @@ class CheckMessageStatus implements ShouldQueue, ShouldBeUnique
                         $tempMoAccountant = true;
                     }
                 }
-                $tfSpecialist = $tfSpecialist && $tempTfSpecialist;
                 $tfHead = $tfHead && $tempTfHead;
                 $tfAccountant = $tfAccountant && $tempTfAccountant;
                 $moHead = $moHead && $tempMoHead;
                 $moAccountant = $moAccountant && $tempMoAccountant;
             }
-            // Проверяем есть ли подпись специалиста
-            if ($tfSpecialist) {
-                $msg->status_id = $statusSignedBySpecialist->id;
-            }
-            // Подписи специалиста И бухгалтера И руководителя ТФОМС => SignedByHead
-            if ($tfSpecialist && $tfHead && $tfAccountant) {
+            // бухгалтера И руководителя ТФОМС => SignedByHead
+            if ($tfHead && $tfAccountant) {
                 $msg->status_id = $statusSignedByHead->id;
-            }
-            // Для ФИН и BUCH
-            $fin = User::role('fin')->get()->pluck('id')->toArray();
-            $buch = User::role('buch')->get()->pluck('id')->toArray();
-            if (in_array($msg->user_id, $fin) || in_array($msg->user_id, $buch)) {
-                // Подписи специалиста И бухгалтера И руководителя ТФОМС => SignedByHead
-                if ($tfHead && $tfAccountant) {
-                    $msg->status_id = $statusSignedByHead->id;
-                }
             }
             // Подписи бухгалтера И руководителя МО => Ready
             if ($msg->status_id === $statusSignedByHead->id) {
