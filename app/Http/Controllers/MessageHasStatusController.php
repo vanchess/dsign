@@ -127,7 +127,7 @@ class MessageHasStatusController extends Controller
            $user->hasPermissionTo('send displist') &&
            $msg->organization->id === $user->organization->id
         ){
-            if ($msg->period->to < now()->subMonth() ) {
+            if ($msg->period->to < now() ) {
                 // Срок отправки листа прошел -> отклоняем
                 $statusRejectedFlc = MessageStatus::where('name','rejected_flc')->firstOrFail();
                 $msg->status_id = $statusRejectedFlc->id;
