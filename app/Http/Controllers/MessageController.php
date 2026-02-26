@@ -319,6 +319,8 @@ class MessageController extends Controller
 
         // Для МЭК
         if ($request->type == 'mek') {
+            $mType = 'mek';
+
             $orgId = $request->toOrg[0];
             $toOrg  = Organization::find($orgId);
             $msg->organization_id = $toOrg->id;
@@ -337,11 +339,12 @@ class MessageController extends Controller
             $attachUsersArr = [$msg->user_id];
 
             $orgUsers = $toOrg->users()->with('permissions')->get();
-            // Добавляем пользователей подписывающих МЭК
+            // Добавляем пользователей
             // со стороны мед.организации
             foreach ($orgUsers as $u) {
                 if (
-                    $u->hasPermissionTo('sign-mo-lider mek')
+                    $u->hasPermissionTo('sign-mo-lider ' . $mType)
+                    || $u->hasPermissionTo('receive mo-' . $mType)
                 ) {
                     $attachUsersArr[] = $u->id;
                 }
@@ -383,6 +386,8 @@ class MessageController extends Controller
         }
         // Для МЭЭ
         if ($request->type == 'mee') {
+            $mType = 'mee';
+
             $orgId = $request->toOrg[0];
             $toOrg  = Organization::find($orgId);
             $msg->organization_id = $toOrg->id;
@@ -391,11 +396,12 @@ class MessageController extends Controller
             $attachUsersArr = [$msg->user_id];
 
             $orgUsers = $toOrg->users()->with('permissions')->get();
-            // Добавляем пользователей подписывающих МЭЭ
+            // Добавляем пользователей
             // со стороны мед.организации
             foreach ($orgUsers as $u) {
                 if (
-                    $u->hasPermissionTo('sign-mo-lider mee')
+                    $u->hasPermissionTo('sign-mo-lider ' . $mType)
+                    || $u->hasPermissionTo('receive mo-' . $mType)
                 ) {
                     $attachUsersArr[] = $u->id;
                 }
