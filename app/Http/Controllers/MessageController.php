@@ -420,7 +420,7 @@ class MessageController extends Controller
         // Для РЕЕСТРОВ
         if ($request->type == 'reg') {
             $attachUsersArr = [$msg->user_id];
-            // Пересылаем все реестры на AIS
+            // Пересылаем все реестры на AIS, iao...
             $receiveAllRegUsersIds = User::permission('receive all-reg')->get()->pluck('id')->toArray();
 
             $attachUsersArr = array_merge(
