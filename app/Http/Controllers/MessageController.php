@@ -336,7 +336,11 @@ class MessageController extends Controller
             }
             $msg->save();
 
-            $attachUsersArr = [$msg->user_id];
+            // Пересылаем
+            $attachUsersArr = array_merge(
+                [$msg->user_id],
+                User::permission('receive all-'.$mType)->get()->pluck('id')->toArray(),
+            );
 
             $orgUsers = $toOrg->users()->with('permissions')->get();
             // Добавляем пользователей
@@ -393,7 +397,11 @@ class MessageController extends Controller
             $msg->organization_id = $toOrg->id;
             $msg->save();
 
-            $attachUsersArr = [$msg->user_id];
+            // Пересылаем
+            $attachUsersArr = array_merge(
+                [$msg->user_id],
+                User::permission('receive all-'.$mType)->get()->pluck('id')->toArray(),
+            );
 
             $orgUsers = $toOrg->users()->with('permissions')->get();
             // Добавляем пользователей
